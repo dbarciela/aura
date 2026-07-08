@@ -252,6 +252,7 @@ public class TargetServerController {
         }
     }
 
+    @Scheduled(initialDelay = 0, fixedRate = 3600000) // Run on startup and every hour
     @GetMapping("/check-update")
     public ResponseEntity<?> checkUpdate() {
         try {
