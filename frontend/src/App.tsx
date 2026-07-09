@@ -25,25 +25,17 @@ export default function App() {
   const [targetUrl, setTargetUrl] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/proxy/settings')
-      .then(res => res.json())
-      .then(data => {
-        setIsInterceptRequests(data.interceptRequests);
-        setIsInterceptResponses(data.interceptResponses);
-        setIsLoggingEnabled(data.loggingEnabled);
-        setInterceptRegex(data.interceptRegex || '');
-        setWebUiUrl(data.webUiUrl || '');
-      })
-      .catch(err => console.error("Error fetching settings:", err));
-      
-    fetch('/api/proxy/target-url')
-      .then(res => res.text())
-      .then(url => {
-        setTargetUrl(url);
-        // If webUiUrl is not set, guess it from targetUrl by removing /v1
-        setWebUiUrl(prev => prev || url.replace('/v1', ''));
-      })
-      .catch(() => {});
+    Promise.all([
+      fetch('/api/proxy/settings').then(res => res.json()),
+      fetch('/api/proxy/target-url').then(res => res.text())
+    ]).then(([settingsData, url]) => {
+      setIsInterceptRequests(settingsData.interceptRequests);
+      setIsInterceptResponses(settingsData.interceptResponses);
+      setIsLoggingEnabled(settingsData.loggingEnabled);
+      setInterceptRegex(settingsData.interceptRegex || '');
+      setTargetUrl(url);
+      setWebUiUrl(settingsData.webUiUrl || url.replace('/v1', ''));
+    }).catch(err => console.error("Error fetching initialization data:", err));
   }, []);
 
   useEffect(() => {
