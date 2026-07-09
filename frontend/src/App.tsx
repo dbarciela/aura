@@ -17,6 +17,7 @@ export default function App() {
   const [isLogsOpen, setIsLogsOpen] = useState(false);
 
   const [interceptRegex, setInterceptRegex] = useState<string>('');
+  const [webUiUrl, setWebUiUrl] = useState<string>('');
   const [targetUrl, setTargetUrl] = useState<string>('');
 
   useEffect(() => {
@@ -27,12 +28,17 @@ export default function App() {
         setIsInterceptResponses(data.interceptResponses);
         setIsLoggingEnabled(data.loggingEnabled);
         setInterceptRegex(data.interceptRegex || '');
+        setWebUiUrl(data.webUiUrl || '');
       })
       .catch(err => console.error("Error fetching settings:", err));
       
     fetch('/api/proxy/target-url')
       .then(res => res.text())
-      .then(setTargetUrl)
+      .then(url => {
+        setTargetUrl(url);
+        // If webUiUrl is not set, guess it from targetUrl by removing /v1
+        setWebUiUrl(prev => prev || url.replace('/v1', ''));
+      })
       .catch(() => {});
   }, []);
 
@@ -54,15 +60,17 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const updateSettings = (req: boolean, res: boolean, logging: boolean, regex: string) => {
+  const updateSettings = (req: boolean, res: boolean, logging: boolean, regex: string, uiUrl?: string) => {
+    const finalUiUrl = uiUrl !== undefined ? uiUrl : webUiUrl;
     setIsInterceptRequests(req);
     setIsInterceptResponses(res);
     setIsLoggingEnabled(logging);
     setInterceptRegex(regex);
+    setWebUiUrl(finalUiUrl);
     fetch('/api/proxy/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ interceptRequests: req, interceptResponses: res, loggingEnabled: logging, interceptRegex: regex })
+      body: JSON.stringify({ interceptRequests: req, interceptResponses: res, loggingEnabled: logging, interceptRegex: regex, webUiUrl: finalUiUrl })
     }).catch(err => console.error("Error updating settings:", err));
   };
 
@@ -178,7 +186,14 @@ export default function App() {
         )}
       </main>
       
-      <LogViewerModal isOpen={isLogsOpen} onClose={() => setIsLogsOpen(false)} serverHealthy={serverHealthy} targetUrl={targetUrl} />
+      <LogViewerModal 
+        isOpen={isLogsOpen} 
+        onClose={() => setIsLogsOpen(false)} 
+        serverHealthy={serverHealthy} 
+        targetUrl={targetUrl}
+        webUiUrl={webUiUrl}
+        onUpdateWebUiUrl={(url) => updateSettings(isInterceptRequests, isInterceptResponses, isLoggingEnabled, interceptRegex, url)}
+      />
     </div>
   );
 }

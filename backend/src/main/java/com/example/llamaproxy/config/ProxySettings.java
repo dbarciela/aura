@@ -8,6 +8,7 @@ public class ProxySettings {
     private boolean interceptResponses = false;
     private boolean loggingEnabled = false;
     private String interceptRegex = "";
+    private String webUiUrl = "";
 
     public boolean isInterceptRequests() {
         return interceptRequests;
@@ -39,5 +40,13 @@ public class ProxySettings {
 
     public void setInterceptRegex(String interceptRegex) {
         this.interceptRegex = interceptRegex;
+    }
+
+    public String getWebUiUrl() {
+        return webUiUrl;
+    }
+
+    public void setWebUiUrl(String webUiUrl) {
+        this.webUiUrl = webUiUrl;
     }
 }
