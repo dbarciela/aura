@@ -6,6 +6,7 @@ export interface NotificationAction {
     api?: string;
     url?: string;
     tab?: string;
+    streamUrl?: string;
     autoDismiss?: boolean;
 }
 
@@ -33,9 +34,10 @@ const getRelativeTime = (timestamp: number) => {
 
 interface Props {
     onChangeTab: (tab: any) => void;
+    onStartStream?: (url: string) => void;
 }
 
-export function NotificationArea({ onChangeTab }: Props) {
+export function NotificationArea({ onChangeTab, onStartStream }: Props) {
     const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -93,7 +95,9 @@ export function NotificationArea({ onChangeTab }: Props) {
     };
 
     const handleAction = async (notif: NotificationDTO, action: NotificationAction) => {
-        if (action.api) {
+        if (action.streamUrl && onStartStream) {
+            onStartStream(action.streamUrl);
+        } else if (action.api) {
             try {
                 const res = await fetch(action.api, { method: 'POST' });
                 const text = await res.text();

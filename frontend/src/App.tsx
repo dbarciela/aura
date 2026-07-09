@@ -5,6 +5,7 @@ import { ArchiveBrowser } from './components/ArchiveBrowser';
 import LiveChatPanel from './components/LiveChatPanel';
 import { LogViewerModal } from './components/LogViewerModal';
 import { NotificationArea } from './components/NotificationArea';
+import { ProgressModal } from './components/ProgressModal';
 import { Activity, ServerCrash } from 'lucide-react';
 
 export default function App() {
@@ -15,6 +16,9 @@ export default function App() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'intercept' | 'live' | 'archive'>('intercept');
   const [isLogsOpen, setIsLogsOpen] = useState(false);
+  
+  const [activeStreamUrl, setActiveStreamUrl] = useState<string | null>(null);
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
 
   const [interceptRegex, setInterceptRegex] = useState<string>('');
   const [webUiUrl, setWebUiUrl] = useState<string>('');
@@ -155,7 +159,13 @@ export default function App() {
             </div>
             
             <div className="h-8 w-px bg-gray-700 mx-2"></div>
-            <NotificationArea onChangeTab={setActiveTab} />
+            <NotificationArea 
+              onChangeTab={setActiveTab} 
+              onStartStream={(url) => {
+                setActiveStreamUrl(url);
+                setIsProgressModalOpen(true);
+              }}
+            />
           </div>
         </div>
       </header>
@@ -200,6 +210,16 @@ export default function App() {
         targetUrl={targetUrl}
         webUiUrl={webUiUrl}
         onUpdateWebUiUrl={(url) => updateSettings(isInterceptRequests, isInterceptResponses, isLoggingEnabled, interceptRegex, url)}
+      />
+
+      <ProgressModal
+        isOpen={isProgressModalOpen}
+        onClose={() => {
+          setIsProgressModalOpen(false);
+          setActiveStreamUrl(null);
+        }}
+        streamUrl={activeStreamUrl || ''}
+        title="Updating Llama.cpp"
       />
     </div>
   );
