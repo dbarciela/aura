@@ -7,7 +7,10 @@ import org.springframework.context.event.EventListener;
 
 import java.io.IOException;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication
+@EnableScheduling
 public class LlamaproxyApplication {
 
     public static void main(String[] args) {

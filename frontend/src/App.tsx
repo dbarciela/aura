@@ -8,6 +8,7 @@ import { NotificationArea } from './components/NotificationArea';
 import { ProgressModal } from './components/ProgressModal';
 import { useBackgroundTasks } from './hooks/useBackgroundTasks';
 import { Activity, ServerCrash } from 'lucide-react';
+import { HardwareWidget } from './components/HardwareWidget';
 
 export default function App() {
   const [isInterceptRequests, setIsInterceptRequests] = useState(false);
@@ -126,23 +127,25 @@ export default function App() {
             </button>
             <button 
               onClick={() => setActiveTab('archive')}
-              className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'archive' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+              className={`px-4 py-2 rounded-md transition-colors flex items-center space-x-2 ${activeTab === 'archive' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
             >
-              Network Logs
+              <span>Network Logs</span>
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateSettings(isInterceptRequests, isInterceptResponses, !isLoggingEnabled, interceptRegex, interceptInvalidJson, promptReplaceRegex, promptReplaceWith);
+                }}
+                className={`w-8 h-4 rounded-full transition-colors flex items-center px-0.5 cursor-pointer ml-2 ${isLoggingEnabled ? (activeTab === 'archive' ? 'bg-purple-400' : 'bg-purple-500') : 'bg-gray-600'}`}
+                title="Toggle Network Logging"
+              >
+                <div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${isLoggingEnabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+              </div>
             </button>
           </div>
         </div>
         
         <div className="flex items-center space-x-6">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-sm font-medium">Network Logging:</span>
-            <button 
-              onClick={() => updateSettings(isInterceptRequests, isInterceptResponses, !isLoggingEnabled, interceptRegex, interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
-              className={`w-12 h-6 rounded-full transition-colors flex items-center px-1 ${isLoggingEnabled ? 'bg-purple-500' : 'bg-gray-700'}`}
-            >
-              <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${isLoggingEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
-            </button>
-          </label>
+          <HardwareWidget />
 
           <div className="h-8 w-px bg-gray-700 mx-2"></div>
 

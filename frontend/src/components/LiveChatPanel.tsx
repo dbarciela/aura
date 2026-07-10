@@ -10,6 +10,9 @@ export default function LiveChatPanel() {
   const [liveScroll, setLiveScroll] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   
+  const [metrics, setMetrics] = useState<any>(null);
+  const [contextLimit, setContextLimit] = useState<number | null>(null);
+  
   useEffect(() => {
     if (liveScroll && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -93,6 +96,14 @@ export default function LiveChatPanel() {
                   });
               }
           }
+      } else if (payload.type === 'METRICS') {
+          try {
+              setMetrics(JSON.parse(payload.data));
+          } catch { /* ignore */ }
+      } else if (payload.type === 'CONTEXT_LIMIT') {
+          try {
+              setContextLimit(parseInt(payload.data));
+          } catch { /* ignore */ }
       }
     });
 
@@ -108,6 +119,25 @@ export default function LiveChatPanel() {
   return (
     <div className="flex-1 bg-gray-950 flex flex-col overflow-hidden relative">
       <div className="absolute top-4 right-6 z-10 flex space-x-2">
+        {metrics && (
+          <div className="flex items-center space-x-3 text-xs text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800">
+            <span title="Time To First Token">TTFT: {metrics.ttft}ms</span>
+            <div className="w-px h-3 bg-gray-700"></div>
+            <span title="Tokens per Second">{metrics.tokensPerSec.toFixed(1)} t/s</span>
+            {metrics.totalTokens > 0 && (
+              <>
+                <div className="w-px h-3 bg-gray-700"></div>
+                <span 
+                  title="Context Cost" 
+                  className={contextLimit && metrics.totalTokens > contextLimit * 0.85 ? 'text-red-400 font-bold' : ''}
+                >
+                  {contextLimit && metrics.totalTokens > contextLimit * 0.85 && '🚨 '}
+                  Ctx: {metrics.totalTokens} {contextLimit ? `/ ${contextLimit}` : ''}
+                </span>
+              </>
+            )}
+          </div>
+        )}
         <label className="flex items-center space-x-2 text-xs text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800 cursor-pointer hover:text-gray-200">
           <input 
             type="checkbox" 

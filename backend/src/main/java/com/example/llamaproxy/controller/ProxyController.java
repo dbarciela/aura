@@ -92,6 +92,8 @@ public class ProxyController {
             })
             .body(reqCtx.getPayload().getBytes(StandardCharsets.UTF_8))
             .exchange((clientRequest, clientResponse) -> {
+                long startTime = System.currentTimeMillis();
+                long[] ttft = new long[]{-1};
                 
                 // Set response status
                 response.setStatus(clientResponse.getStatusCode().value());
@@ -112,6 +114,9 @@ public class ProxyController {
                         byte[] buffer = new byte[8192];
                         int bytesRead;
                         while ((bytesRead = is.read(buffer)) != -1) {
+                            if (ttft[0] == -1) {
+                                ttft[0] = System.currentTimeMillis() - startTime;
+                            }
                             aggregatedBody.write(buffer, 0, bytesRead);
                             
                             // Broadcast live chunk
@@ -127,6 +132,9 @@ public class ProxyController {
                         }
                     }
                     String finalResponsePayload = aggregatedBody.toString(StandardCharsets.UTF_8);
+                    
+                    extractAndBroadcastMetrics(reqCtx.getId(), finalResponsePayload, startTime, ttft[0]);
+                    
                     liveChatBroadcaster.broadcastDone(reqCtx.getId(), finalResponsePayload);
                     
                     ResponseContext resCtx = new ResponseContext(reqCtx, clientResponse.getStatusCode().value(), respHeaders, finalResponsePayload);
@@ -139,11 +147,16 @@ public class ProxyController {
                         byte[] buffer = new byte[8192];
                         int bytesRead;
                         while ((bytesRead = is.read(buffer)) != -1) {
+                            if (ttft[0] == -1) {
+                                ttft[0] = System.currentTimeMillis() - startTime;
+                            }
                             aggregatedBody.write(buffer, 0, bytesRead);
                         }
                     }
                     
                     String finalResponsePayload = aggregatedBody.toString(StandardCharsets.UTF_8);
+                    extractAndBroadcastMetrics(reqCtx.getId(), finalResponsePayload, startTime, ttft[0]);
+
                     ResponseContext resCtx = new ResponseContext(reqCtx, clientResponse.getStatusCode().value(), respHeaders, finalResponsePayload);
                     
                     // 3. Run Response Pipeline (this will block for manual editing)
@@ -178,5 +191,45 @@ public class ProxyController {
                 
                 return null;
             });
+    }
+
+    private void extractAndBroadcastMetrics(String reqId, String payload, long startTime, long ttft) {
+        try {
+            long totalTime = System.currentTimeMillis() - startTime;
+            if (ttft == -1) ttft = totalTime;
+            
+            int promptTokens = 0;
+            int completionTokens = 0;
+            int totalTokens = 0;
+            
+            // Try to find "usage" block in payload
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"usage\"\\s*:\\s*(\\{[^}]+\\})");
+            java.util.regex.Matcher m = p.matcher(payload);
+            String usageJson = null;
+            while (m.find()) {
+                usageJson = m.group(1); // last one
+            }
+            
+            if (usageJson != null) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.Map usage = mapper.readValue(usageJson, java.util.Map.class);
+                if (usage.containsKey("prompt_tokens")) promptTokens = ((Number) usage.get("prompt_tokens")).intValue();
+                if (usage.containsKey("completion_tokens")) completionTokens = ((Number) usage.get("completion_tokens")).intValue();
+                if (usage.containsKey("total_tokens")) totalTokens = ((Number) usage.get("total_tokens")).intValue();
+            }
+
+            double tokensPerSec = 0;
+            long generationTime = totalTime - ttft;
+            if (generationTime > 0 && completionTokens > 0) {
+                tokensPerSec = completionTokens / (generationTime / 1000.0);
+            }
+
+            String metricsJson = String.format("{\"ttft\":%d, \"totalTime\":%d, \"promptTokens\":%d, \"completionTokens\":%d, \"totalTokens\":%d, \"tokensPerSec\":%.2f}",
+                ttft, totalTime, promptTokens, completionTokens, totalTokens, tokensPerSec);
+                
+            liveChatBroadcaster.broadcastMetrics(reqId, metricsJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

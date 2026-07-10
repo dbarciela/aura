@@ -50,6 +50,45 @@ public class LiveChatBroadcaster {
         }
     }
 
+    public void broadcastHardware(String jsonPayload) {
+        if (emitters.isEmpty()) return;
+        String eventMessage = String.format("{\"id\":\"%s\",\"type\":\"%s\",\"data\":%s}", 
+            java.util.UUID.randomUUID().toString(), "HARDWARE", jsonPayload);
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event().name("live-chat").data(eventMessage));
+            } catch (IOException e) {
+                emitters.remove(emitter);
+            }
+        }
+    }
+
+    public void broadcastContextLimit(int limit) {
+        if (emitters.isEmpty()) return;
+        String eventMessage = String.format("{\"id\":\"%s\",\"type\":\"%s\",\"data\":%d}", 
+            java.util.UUID.randomUUID().toString(), "CONTEXT_LIMIT", limit);
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event().name("live-chat").data(eventMessage));
+            } catch (IOException e) {
+                emitters.remove(emitter);
+            }
+        }
+    }
+
+    public void broadcastMetrics(String id, String metricsJson) {
+        if (emitters.isEmpty()) return;
+        String eventMessage = String.format("{\"id\":\"%s\",\"type\":\"%s\",\"data\":%s}", 
+            id, "METRICS", metricsJson);
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event().name("live-chat").data(eventMessage));
+            } catch (IOException e) {
+                emitters.remove(emitter);
+            }
+        }
+    }
+
     private String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")
