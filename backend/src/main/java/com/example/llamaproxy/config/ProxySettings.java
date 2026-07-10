@@ -9,6 +9,10 @@ public class ProxySettings {
     private boolean interceptResponses = false;
     private boolean loggingEnabled = false;
     private String interceptRegex = "";
+    
+    private boolean interceptInvalidJson = false;
+    private String promptReplaceRegex = "";
+    private String promptReplaceWith = "";
 
     @Value("${target.webui.url:}")
     private String webUiUrl;
@@ -51,5 +55,29 @@ public class ProxySettings {
 
     public void setWebUiUrl(String webUiUrl) {
         this.webUiUrl = webUiUrl;
+    }
+
+    public boolean isInterceptInvalidJson() {
+        return interceptInvalidJson;
+    }
+
+    public void setInterceptInvalidJson(boolean interceptInvalidJson) {
+        this.interceptInvalidJson = interceptInvalidJson;
+    }
+
+    public String getPromptReplaceRegex() {
+        return promptReplaceRegex;
+    }
+
+    public void setPromptReplaceRegex(String promptReplaceRegex) {
+        this.promptReplaceRegex = promptReplaceRegex;
+    }
+
+    public String getPromptReplaceWith() {
+        return promptReplaceWith;
+    }
+
+    public void setPromptReplaceWith(String promptReplaceWith) {
+        this.promptReplaceWith = promptReplaceWith;
     }
 }

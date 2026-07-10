@@ -23,11 +23,27 @@ public class SettingsController {
         settings.setInterceptRequests(newSettings.isInterceptRequests());
         settings.setInterceptResponses(newSettings.isInterceptResponses());
         settings.setLoggingEnabled(newSettings.isLoggingEnabled());
+        
+        settings.setInterceptInvalidJson(newSettings.isInterceptInvalidJson());
+        
         if (newSettings.getInterceptRegex() != null) {
             settings.setInterceptRegex(newSettings.getInterceptRegex());
         } else {
             settings.setInterceptRegex("");
         }
+
+        if (newSettings.getPromptReplaceRegex() != null) {
+            settings.setPromptReplaceRegex(newSettings.getPromptReplaceRegex());
+        } else {
+            settings.setPromptReplaceRegex("");
+        }
+
+        if (newSettings.getPromptReplaceWith() != null) {
+            settings.setPromptReplaceWith(newSettings.getPromptReplaceWith());
+        } else {
+            settings.setPromptReplaceWith("");
+        }
+
         return settings;
     }
 }

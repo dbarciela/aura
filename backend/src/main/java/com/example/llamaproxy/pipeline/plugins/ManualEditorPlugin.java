@@ -89,16 +89,35 @@ public class ManualEditorPlugin implements ProxyPlugin {
             return;
         }
 
-        String regex = settings.getInterceptRegex();
-        if (regex != null && !regex.isEmpty()) {
+        boolean shouldIntercept = false;
+
+        // 1. Invalid JSON check
+        if (settings.isInterceptInvalidJson() && context.getPayload() != null) {
             try {
-                if (context.getPayload() == null || !java.util.regex.Pattern.compile(regex).matcher(context.getPayload()).find()) {
-                    return; // Skip intercept if regex doesn't match
-                }
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.readTree(context.getPayload());
             } catch (Exception e) {
-                // Invalid regex, skip intercept to be safe
-                return;
+                // Not valid JSON
+                shouldIntercept = true;
             }
+        }
+
+        // 2. Regex check
+        if (!shouldIntercept) {
+            String regex = settings.getInterceptRegex();
+            if (regex != null && !regex.isEmpty()) {
+                try {
+                    if (context.getPayload() != null && java.util.regex.Pattern.compile(regex).matcher(context.getPayload()).find()) {
+                        shouldIntercept = true;
+                    }
+                } catch (Exception e) {
+                    // Invalid regex, skip
+                }
+            }
+        }
+
+        if (!shouldIntercept) {
+            return;
         }
 
         String id = context.getRequestContext().getId() + "-res";

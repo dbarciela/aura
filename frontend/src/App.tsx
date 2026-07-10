@@ -21,6 +21,10 @@ export default function App() {
   const { tasks, startTask, minimizeTask, openTask, closeTask } = useBackgroundTasks();
 
   const [interceptRegex, setInterceptRegex] = useState<string>('');
+  const [interceptInvalidJson, setInterceptInvalidJson] = useState(false);
+  const [promptReplaceRegex, setPromptReplaceRegex] = useState<string>('');
+  const [promptReplaceWith, setPromptReplaceWith] = useState<string>('');
+
   const [webUiUrl, setWebUiUrl] = useState<string>('');
   const [targetUrl, setTargetUrl] = useState<string>('');
 
@@ -33,6 +37,9 @@ export default function App() {
       setIsInterceptResponses(settingsData.interceptResponses);
       setIsLoggingEnabled(settingsData.loggingEnabled);
       setInterceptRegex(settingsData.interceptRegex || '');
+      setInterceptInvalidJson(settingsData.interceptInvalidJson || false);
+      setPromptReplaceRegex(settingsData.promptReplaceRegex || '');
+      setPromptReplaceWith(settingsData.promptReplaceWith || '');
       setTargetUrl(url);
       setWebUiUrl(settingsData.webUiUrl || url.replace('/v1', ''));
     }).catch(err => console.error("Error fetching initialization data:", err));
@@ -63,15 +70,26 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const updateSettings = (req: boolean, res: boolean, logging: boolean, regex: string) => {
+  const updateSettings = (req: boolean, res: boolean, logging: boolean, regex: string, invalidJson: boolean, pFind: string, pReplace: string) => {
     setIsInterceptRequests(req);
     setIsInterceptResponses(res);
     setIsLoggingEnabled(logging);
     setInterceptRegex(regex);
+    setInterceptInvalidJson(invalidJson);
+    setPromptReplaceRegex(pFind);
+    setPromptReplaceWith(pReplace);
     fetch('/api/proxy/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ interceptRequests: req, interceptResponses: res, loggingEnabled: logging, interceptRegex: regex })
+      body: JSON.stringify({ 
+        interceptRequests: req, 
+        interceptResponses: res, 
+        loggingEnabled: logging, 
+        interceptRegex: regex,
+        interceptInvalidJson: invalidJson,
+        promptReplaceRegex: pFind,
+        promptReplaceWith: pReplace
+      })
     }).catch(err => console.error("Error updating settings:", err));
   };
 
@@ -119,7 +137,7 @@ export default function App() {
           <label className="flex items-center space-x-2 cursor-pointer">
             <span className="text-sm font-medium">Network Logging:</span>
             <button 
-              onClick={() => updateSettings(isInterceptRequests, isInterceptResponses, !isLoggingEnabled, interceptRegex)}
+              onClick={() => updateSettings(isInterceptRequests, isInterceptResponses, !isLoggingEnabled, interceptRegex, interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
               className={`w-12 h-6 rounded-full transition-colors flex items-center px-1 ${isLoggingEnabled ? 'bg-purple-500' : 'bg-gray-700'}`}
             >
               <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${isLoggingEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
@@ -165,16 +183,19 @@ export default function App() {
         {activeTab === 'intercept' ? (
           <>
             {/* Left Sidebar: Queue */}
-            <div className="w-80 border-r border-gray-800 bg-gray-900/50 flex flex-col">
-              <QueuePanel 
-                selectedRequestId={selectedRequestId} 
-                onSelectRequest={setSelectedRequestId}
-                isInterceptRequests={isInterceptRequests}
-                isInterceptResponses={isInterceptResponses}
-                interceptRegex={interceptRegex}
-                onUpdateSettings={(req, res, regex) => updateSettings(req, res, isLoggingEnabled, regex)}
-              />
-            </div>
+            <div className="w-80 h-full">
+            <QueuePanel 
+              selectedRequestId={selectedRequestId} 
+              onSelectRequest={setSelectedRequestId}
+              isInterceptRequests={isInterceptRequests}
+              isInterceptResponses={isInterceptResponses}
+              interceptRegex={interceptRegex}
+              interceptInvalidJson={interceptInvalidJson}
+              promptReplaceRegex={promptReplaceRegex}
+              promptReplaceWith={promptReplaceWith}
+              onUpdateSettings={updateSettings}
+            />
+          </div>
             
             {/* Main Editor Area */}
             <div className="flex-1 bg-gray-950 flex flex-col">

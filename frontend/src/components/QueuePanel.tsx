@@ -15,10 +15,18 @@ interface QueuePanelProps {
   isInterceptRequests: boolean;
   isInterceptResponses: boolean;
   interceptRegex: string;
-  onUpdateSettings: (interceptRequests: boolean, interceptResponses: boolean, interceptRegex: string) => void;
+  interceptInvalidJson: boolean;
+  promptReplaceRegex: string;
+  promptReplaceWith: string;
+  onUpdateSettings: (interceptRequests: boolean, interceptResponses: boolean, logging: boolean, regex: string, invalidJson: boolean, pFind: string, pReplace: string) => void;
 }
 
-export function QueuePanel({ selectedRequestId, onSelectRequest, isInterceptRequests, isInterceptResponses, interceptRegex, onUpdateSettings }: QueuePanelProps) {
+export function QueuePanel({ 
+  selectedRequestId, onSelectRequest, 
+  isInterceptRequests, isInterceptResponses, interceptRegex, 
+  interceptInvalidJson, promptReplaceRegex, promptReplaceWith,
+  onUpdateSettings 
+}: QueuePanelProps) {
   const [queue, setQueue] = useState<RequestContext[]>([]);
 
   const fetchQueue = () => {
@@ -67,7 +75,7 @@ export function QueuePanel({ selectedRequestId, onSelectRequest, isInterceptRequ
           <label className="flex items-center justify-between cursor-pointer">
             <span className="text-xs font-medium text-gray-400">Intercept Requests</span>
             <button 
-              onClick={() => onUpdateSettings(!isInterceptRequests, isInterceptResponses, interceptRegex)}
+              onClick={() => onUpdateSettings(!isInterceptRequests, isInterceptResponses, false, interceptRegex, interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
               className={`w-10 h-5 rounded-full transition-colors flex items-center px-1 ${isInterceptRequests ? 'bg-blue-600' : 'bg-gray-700'}`}
             >
               <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform ${isInterceptRequests ? 'translate-x-5' : 'translate-x-0'}`}></div>
@@ -76,22 +84,50 @@ export function QueuePanel({ selectedRequestId, onSelectRequest, isInterceptRequ
           <label className="flex items-center justify-between cursor-pointer">
             <span className="text-xs font-medium text-gray-400">Intercept Responses</span>
             <button 
-              onClick={() => onUpdateSettings(isInterceptRequests, !isInterceptResponses, interceptRegex)}
+              onClick={() => onUpdateSettings(isInterceptRequests, !isInterceptResponses, false, interceptRegex, interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
               className={`w-10 h-5 rounded-full transition-colors flex items-center px-1 ${isInterceptResponses ? 'bg-purple-600' : 'bg-gray-700'}`}
             >
               <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform ${isInterceptResponses ? 'translate-x-5' : 'translate-x-0'}`}></div>
             </button>
           </label>
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="text-xs font-medium text-gray-400">Intercept Invalid JSON</span>
+            <button 
+              onClick={() => onUpdateSettings(isInterceptRequests, isInterceptResponses, false, interceptRegex, !interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
+              className={`w-10 h-5 rounded-full transition-colors flex items-center px-1 ${interceptInvalidJson ? 'bg-red-600' : 'bg-gray-700'}`}
+            >
+              <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform ${interceptInvalidJson ? 'translate-x-5' : 'translate-x-0'}`}></div>
+            </button>
+          </label>
           
-          <div className="pt-2 border-t border-gray-800">
-            <label className="text-xs font-medium text-gray-400 mb-1 block">Regex Matcher (Optional)</label>
-            <input 
-              type="text" 
-              placeholder="e.g. .*error.*" 
-              value={interceptRegex || ''}
-              onChange={(e) => onUpdateSettings(isInterceptRequests, isInterceptResponses, e.target.value)}
-              className="w-full bg-gray-950 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-blue-500 font-mono"
-            />
+          <div className="pt-2 border-t border-gray-800 space-y-2">
+            <div>
+              <label className="text-xs font-medium text-gray-400 mb-1 block">Regex Matcher (Optional)</label>
+              <input 
+                type="text" 
+                placeholder="e.g. .*error.*" 
+                value={interceptRegex || ''}
+                onChange={(e) => onUpdateSettings(isInterceptRequests, isInterceptResponses, false, e.target.value, interceptInvalidJson, promptReplaceRegex, promptReplaceWith)}
+                className="w-full bg-gray-950 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-blue-500 font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-400 mb-1 block">Prompt Find & Replace (Regex)</label>
+              <input 
+                type="text" 
+                placeholder="Find Regex..." 
+                value={promptReplaceRegex || ''}
+                onChange={(e) => onUpdateSettings(isInterceptRequests, isInterceptResponses, false, interceptRegex, interceptInvalidJson, e.target.value, promptReplaceWith)}
+                className="w-full bg-gray-950 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-blue-500 font-mono mb-1"
+              />
+              <input 
+                type="text" 
+                placeholder="Replace with..." 
+                value={promptReplaceWith || ''}
+                onChange={(e) => onUpdateSettings(isInterceptRequests, isInterceptResponses, false, interceptRegex, interceptInvalidJson, promptReplaceRegex, e.target.value)}
+                className="w-full bg-gray-950 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-blue-500 font-mono"
+              />
+            </div>
           </div>
         </div>
       </div>
