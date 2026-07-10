@@ -77,6 +77,7 @@ export default function App() {
 
   const restartServer = () => {
     if (window.confirm("Are you sure you want to restart the Llama server?")) {
+      setIsLogsOpen(true);
       fetch('/api/proxy/restart-target', { method: 'POST' })
         .then(res => {
           if (!res.ok) alert('Failed to restart server');
