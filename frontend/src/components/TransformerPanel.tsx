@@ -30,8 +30,8 @@ export function TransformerPanel({ settings }: TransformerPanelProps) {
             <div className="space-y-3">
               {promptRules.map((rule: any, i: number) => (
                 <div key={i} className="flex flex-col bg-gray-900 p-3 rounded-lg border border-gray-700">
-                  <div className="text-sm font-mono text-pink-400 mb-1">{rule.pattern}</div>
-                  <div className="text-sm font-mono text-green-400">➔ {rule.replacement}</div>
+                  <div className="text-sm font-mono text-pink-400 mb-1">{rule.regex}</div>
+                  <div className="text-sm font-mono text-green-400">➔ {rule.with}</div>
                 </div>
               ))}
             </div>
@@ -46,8 +46,8 @@ export function TransformerPanel({ settings }: TransformerPanelProps) {
             <div className="space-y-3">
               {responseRules.map((rule: any, i: number) => (
                 <div key={i} className="flex flex-col bg-gray-900 p-3 rounded-lg border border-gray-700">
-                  <div className="text-sm font-mono text-pink-400 mb-1">{rule.pattern}</div>
-                  <div className="text-sm font-mono text-green-400">➔ {rule.replacement}</div>
+                  <div className="text-sm font-mono text-pink-400 mb-1">{rule.regex}</div>
+                  <div className="text-sm font-mono text-green-400">➔ {rule.with}</div>
                 </div>
               ))}
             </div>
