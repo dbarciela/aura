@@ -27,7 +27,7 @@ public class HardwareMonitorService {
         this.hal = systemInfo.getHardware();
     }
 
-    @Scheduled(fixedRate = 2000)
+    @Scheduled(fixedRateString = "${hardware.monitor.interval:5000}")
     public void broadcastHardwareStats() {
         Map<String, Object> stats = new HashMap<>();
         

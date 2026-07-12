@@ -200,9 +200,6 @@ export default function App() {
         </div>
         
         <div className="flex items-center space-x-6">
-          <HardwareWidget />
-
-          <div className="h-8 w-px bg-gray-700 mx-2"></div>
 
           <div className="flex items-center space-x-3">
             <button 
@@ -282,6 +279,12 @@ export default function App() {
         onClose={closeTask}
         onMinimize={minimizeTask}
       />
+
+      {/* Status Bar */}
+      <footer className="h-6 bg-gray-900 border-t border-gray-800 flex items-center px-4 justify-between z-50">
+        <HardwareWidget />
+        <div className="text-[10px] text-gray-500 font-medium tracking-wider">LlamaProxy</div>
+      </footer>
     </div>
   );
 }

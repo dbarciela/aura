@@ -46,67 +46,50 @@ export function HardwareWidget() {
   if (!stats) return null;
 
   return (
-    <div className="flex items-center space-x-4 bg-gray-900 px-4 py-2 rounded-xl border border-gray-800 text-xs text-gray-300">
+    <div className="flex items-center space-x-4 text-xs text-gray-400 font-mono">
       {/* CPU */}
-      <div className="flex flex-col items-center justify-center min-w-[60px]" title="CPU Load">
-        <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
-          <span className="font-bold uppercase tracking-wider">CPU</span>
-          {stats.cpuTemp !== undefined && <span>{stats.cpuTemp}°C</span>}
-        </div>
-        <div className="flex items-center space-x-1.5 text-blue-400 font-mono">
-          <Cpu className="w-3.5 h-3.5" />
-          <span>{stats.cpuLoad}%</span>
-        </div>
+      <div className="flex items-center space-x-2" title="CPU Load">
+        <Cpu className="w-3.5 h-3.5 text-blue-400" />
+        <span className="font-bold text-gray-300">CPU</span>
+        <span className="text-blue-400">{stats.cpuLoad}%</span>
+        {stats.cpuTemp !== undefined && <span className="text-gray-500">({stats.cpuTemp}°C)</span>}
       </div>
 
-      <div className="w-px h-6 bg-gray-700"></div>
+      <div className="w-px h-3 bg-gray-700"></div>
 
       {/* RAM */}
-      <div className="flex flex-col items-center justify-center min-w-[60px]" title={`RAM: ${stats.ramUsedGb}GB / ${stats.ramTotalGb}GB`}>
-        <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
-          <span className="font-bold uppercase tracking-wider">RAM</span>
-        </div>
-        <div className="flex items-center space-x-1.5 text-green-400 font-mono">
-          <MemoryStick className="w-3.5 h-3.5" />
-          <span>{stats.ramPercent}%</span>
-        </div>
+      <div className="flex items-center space-x-2" title={`RAM: ${stats.ramUsedGb}GB / ${stats.ramTotalGb}GB`}>
+        <MemoryStick className="w-3.5 h-3.5 text-green-400" />
+        <span className="font-bold text-gray-300">RAM</span>
+        <span className="text-green-400">{stats.ramPercent}%</span>
       </div>
 
       {stats.gpus && stats.gpus.length > 0 ? (
         stats.gpus.map((gpu, idx) => (
-          <div key={idx} className="flex items-center space-x-4">
-            <div className="w-px h-6 bg-gray-700"></div>
-            <div className="flex flex-col items-center justify-center min-w-[80px]" title={`VRAM: ${gpu.vramUsedGb}GB / ${gpu.vramTotalGb}GB`}>
-              <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
-                <span className="font-bold uppercase tracking-wider truncate max-w-[80px]" title={gpu.name}>{gpu.name}</span>
-                <span>{gpu.temp}°C</span>
-              </div>
-              <div className="flex items-center space-x-2 font-mono">
-                <div className="flex items-center space-x-1 text-pink-400" title="GPU Processing Load">
-                  <MonitorDot className="w-3 h-3" />
-                  <span>{gpu.utilization}%</span>
-                </div>
-                <div className={`flex items-center space-x-1 ${gpu.vramPercent > 85 ? 'text-red-400' : 'text-purple-400'}`} title="VRAM Usage">
-                  <span className="text-[9px] text-gray-600 uppercase">VRAM</span>
-                  <span>{gpu.vramPercent}%</span>
-                </div>
-              </div>
-            </div>
+          <div key={idx} className="flex items-center space-x-2">
+            <div className="w-px h-3 bg-gray-700"></div>
+            <MonitorDot className="w-3.5 h-3.5 text-pink-400" />
+            <span className="font-bold text-gray-300 truncate max-w-[80px]" title={gpu.name}>{gpu.name}</span>
+            <span className="text-pink-400" title="GPU Load">{gpu.utilization}%</span>
+            <span className={`flex items-center ${gpu.vramPercent > 85 ? 'text-red-400' : 'text-purple-400'}`} title="VRAM Usage">
+              <span className="ml-1 text-[10px] text-gray-500 uppercase mr-1">VRAM</span>
+              {gpu.vramPercent}%
+            </span>
+            <span className="text-gray-500">({gpu.temp}°C)</span>
           </div>
         ))
       ) : stats.vramPercent !== undefined && (
         <>
-          <div className="w-px h-6 bg-gray-700"></div>
+          <div className="w-px h-3 bg-gray-700"></div>
           {/* Legacy GPU / VRAM */}
-          <div className="flex flex-col items-center justify-center min-w-[60px]" title={`VRAM: ${stats.vramUsedGb}GB / ${stats.vramTotalGb}GB`}>
-            <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
-              <span className="font-bold uppercase tracking-wider truncate max-w-[80px]" title={stats.gpuName}>{stats.gpuName || 'GPU'}</span>
-              {stats.gpuTemp !== undefined && <span>{stats.gpuTemp}°C</span>}
-            </div>
-            <div className={`flex items-center space-x-1.5 font-mono ${stats.vramPercent > 85 ? 'text-red-400' : 'text-purple-400'}`}>
-              <MonitorDot className="w-3.5 h-3.5" />
-              <span>{stats.vramPercent}%</span>
-            </div>
+          <div className="flex items-center space-x-2">
+            <MonitorDot className="w-3.5 h-3.5 text-pink-400" />
+            <span className="font-bold text-gray-300 truncate max-w-[80px]" title={stats.gpuName || 'GPU'}>{stats.gpuName || 'GPU'}</span>
+            {stats.gpuTemp !== undefined && <span className="text-gray-500">({stats.gpuTemp}°C)</span>}
+            <span className={`flex items-center ${stats.vramPercent > 85 ? 'text-red-400' : 'text-purple-400'}`} title="VRAM Usage">
+              <span className="ml-1 text-[10px] text-gray-500 uppercase mr-1">VRAM</span>
+              {stats.vramPercent}%
+            </span>
           </div>
         </>
       )}
