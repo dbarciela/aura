@@ -52,36 +52,36 @@ public class HardwareMonitorService {
         // VRAM (nvidia-smi)
         if (nvidiaSmiAvailable) {
             try {
-                Process process = new ProcessBuilder("nvidia-smi", "--query-gpu=name,temperature.gpu,memory.used,memory.total", "--format=csv,noheader,nounits")
+                Process process = new ProcessBuilder("nvidia-smi", "--query-gpu=name,temperature.gpu,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits")
                         .start();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                long totalVramUsedMb = 0;
-                long totalVramTotalMb = 0;
-                boolean foundGpu = false;
-                String gpuName = null;
-                int gpuTemp = 0;
+                
+                java.util.List<Map<String, Object>> gpus = new java.util.ArrayList<>();
                 String line;
                 
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(",");
-                    if (parts.length >= 4) {
+                    if (parts.length >= 5) {
                         try {
-                            if (gpuName == null) gpuName = parts[0].trim();
-                            // Keep max temp if multiple GPUs
-                            gpuTemp = Math.max(gpuTemp, Integer.parseInt(parts[1].trim()));
-                            totalVramUsedMb += Long.parseLong(parts[2].trim());
-                            totalVramTotalMb += Long.parseLong(parts[3].trim());
-                            foundGpu = true;
+                            Map<String, Object> gpu = new HashMap<>();
+                            gpu.put("name", parts[0].trim());
+                            gpu.put("temp", Integer.parseInt(parts[1].trim()));
+                            gpu.put("utilization", Integer.parseInt(parts[2].trim()));
+                            
+                            long usedMb = Long.parseLong(parts[3].trim());
+                            long totalMb = Long.parseLong(parts[4].trim());
+                            
+                            gpu.put("vramUsedGb", String.format("%.1f", usedMb / 1024.0));
+                            gpu.put("vramTotalGb", String.format("%.1f", totalMb / 1024.0));
+                            gpu.put("vramPercent", Math.round(((double) usedMb / totalMb) * 100.0));
+                            
+                            gpus.add(gpu);
                         } catch (NumberFormatException ignored) {}
                     }
                 }
                 
-                if (foundGpu) {
-                    if (gpuName != null) stats.put("gpuName", gpuName);
-                    if (gpuTemp > 0) stats.put("gpuTemp", gpuTemp);
-                    stats.put("vramUsedGb", String.format("%.1f", totalVramUsedMb / 1024.0));
-                    stats.put("vramTotalGb", String.format("%.1f", totalVramTotalMb / 1024.0));
-                    stats.put("vramPercent", Math.round(((double) totalVramUsedMb / totalVramTotalMb) * 100.0));
+                if (!gpus.isEmpty()) {
+                    stats.put("gpus", gpus);
                 }
                 process.waitFor();
             } catch (Exception e) {

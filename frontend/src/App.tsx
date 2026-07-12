@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { QueuePanel } from './components/QueuePanel';
 import { InspectorPanel } from './components/InspectorPanel';
 import { ArchiveBrowser } from './components/ArchiveBrowser';
-import LiveChatPanel from './components/LiveChatPanel';
 import { LogViewerModal } from './components/LogViewerModal';
 import { NotificationArea } from './components/NotificationArea';
 import { ProgressModal } from './components/ProgressModal';
@@ -18,7 +17,7 @@ export default function App() {
   const [isLoggingEnabled, setIsLoggingEnabled] = useState(false);
   const [serverHealthy, setServerHealthy] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('live');
+  const [activeTab, setActiveTab] = useState<string>('live-chat-plugin');
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   
   const { tasks, startTask, minimizeTask, openTask, closeTask } = useBackgroundTasks();
@@ -69,7 +68,7 @@ export default function App() {
   useEffect(() => {
     const tabNames: Record<string, string> = {
       'intercept': 'Interceptor',
-      'live': 'Live Chat',
+      'live-chat-plugin': 'Live Chat',
       'archive': 'Network Logs'
     };
     document.title = `LlamaProxy - ${tabNames[activeTab] || 'Home'}`;
@@ -223,15 +222,7 @@ export default function App() {
           </div>
         ) : undefined
       };
-    }),
-    {
-      id: 'live',
-      name: 'Live Chat',
-      order: 1000,
-      icon: undefined,
-      renderAction: undefined,
-      renderContent: () => <LiveChatPanel />
-    }
+    })
   ].sort((a, b) => a.order - b.order);
 
   return (

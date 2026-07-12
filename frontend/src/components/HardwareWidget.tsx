@@ -1,12 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Cpu, MemoryStick, MonitorDot } from 'lucide-react';
 
+interface GpuStat {
+  name: string;
+  temp: number;
+  utilization: number;
+  vramUsedGb: string;
+  vramTotalGb: string;
+  vramPercent: number;
+}
+
 interface HardwareStats {
   cpuLoad: number;
   cpuTemp?: number;
   ramUsedGb: string;
   ramTotalGb: string;
   ramPercent: number;
+  gpus?: GpuStat[];
+  // Legacy
   gpuName?: string;
   gpuTemp?: number;
   vramUsedGb?: string;
@@ -61,10 +72,32 @@ export function HardwareWidget() {
         </div>
       </div>
 
-      {stats.vramPercent !== undefined && (
+      {stats.gpus && stats.gpus.length > 0 ? (
+        stats.gpus.map((gpu, idx) => (
+          <div key={idx} className="flex items-center space-x-4">
+            <div className="w-px h-6 bg-gray-700"></div>
+            <div className="flex flex-col items-center justify-center min-w-[80px]" title={`VRAM: ${gpu.vramUsedGb}GB / ${gpu.vramTotalGb}GB`}>
+              <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
+                <span className="font-bold uppercase tracking-wider truncate max-w-[80px]" title={gpu.name}>{gpu.name}</span>
+                <span>{gpu.temp}°C</span>
+              </div>
+              <div className="flex items-center space-x-2 font-mono">
+                <div className="flex items-center space-x-1 text-pink-400" title="GPU Processing Load">
+                  <MonitorDot className="w-3 h-3" />
+                  <span>{gpu.utilization}%</span>
+                </div>
+                <div className={`flex items-center space-x-1 ${gpu.vramPercent > 85 ? 'text-red-400' : 'text-purple-400'}`} title="VRAM Usage">
+                  <span className="text-[9px] text-gray-600 uppercase">VRAM</span>
+                  <span>{gpu.vramPercent}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : stats.vramPercent !== undefined && (
         <>
           <div className="w-px h-6 bg-gray-700"></div>
-          {/* GPU / VRAM */}
+          {/* Legacy GPU / VRAM */}
           <div className="flex flex-col items-center justify-center min-w-[60px]" title={`VRAM: ${stats.vramUsedGb}GB / ${stats.vramTotalGb}GB`}>
             <div className="flex items-center text-[10px] text-gray-500 mb-0.5 space-x-1">
               <span className="font-bold uppercase tracking-wider truncate max-w-[80px]" title={stats.gpuName}>{stats.gpuName || 'GPU'}</span>
