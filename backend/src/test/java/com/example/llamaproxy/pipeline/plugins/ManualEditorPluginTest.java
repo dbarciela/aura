@@ -1,7 +1,6 @@
 package com.example.llamaproxy.pipeline.plugins;
 
 import com.example.llamaproxy.config.PluginSettingsManager;
-import com.example.llamaproxy.config.ProxySettings;
 import com.example.llamaproxy.pipeline.NotificationService;
 import com.example.llamaproxy.pipeline.RequestContext;
 import com.example.llamaproxy.pipeline.ResponseContext;
@@ -26,9 +25,6 @@ public class ManualEditorPluginTest {
     private PluginSettingsManager settingsManager;
 
     @Mock
-    private ProxySettings coreSettings;
-
-    @Mock
     private NotificationService notificationService;
 
     private ManualEditorPlugin plugin;
@@ -37,7 +33,7 @@ public class ManualEditorPluginTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        plugin = new ManualEditorPlugin(settingsManager, coreSettings, notificationService);
+        plugin = new ManualEditorPlugin(settingsManager, notificationService);
         settings = new ManualEditorPlugin.ManualEditorSettings();
         when(settingsManager.getSettingsAs(eq("manual-editor"), eq(ManualEditorPlugin.ManualEditorSettings.class)))
                 .thenReturn(settings);
@@ -45,7 +41,7 @@ public class ManualEditorPluginTest {
 
     @Test
     public void testProcessRequest_NotIntercepting() {
-        when(coreSettings.isInterceptRequests()).thenReturn(false);
+        settings.enabled = false;
         RequestContext req = new RequestContext(HttpMethod.POST, "/v1/chat", new HttpHeaders(), "payload");
 
         plugin.processRequest(req);
@@ -56,7 +52,7 @@ public class ManualEditorPluginTest {
 
     @Test
     public void testProcessRequest_InterceptAll() throws InterruptedException {
-        when(coreSettings.isInterceptRequests()).thenReturn(true);
+        settings.enabled = true;
         RequestContext req = new RequestContext(HttpMethod.POST, "/v1/chat", new HttpHeaders(), "payload");
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -80,7 +76,7 @@ public class ManualEditorPluginTest {
 
     @Test
     public void testProcessResponse_InterceptInvalidJson() throws InterruptedException {
-        when(coreSettings.isInterceptResponses()).thenReturn(true);
+        settings.enabled = true;
         settings.interceptInvalidJson = true;
 
         RequestContext req = new RequestContext(HttpMethod.POST, "/v1/chat", new HttpHeaders(), "req-payload");
@@ -103,7 +99,7 @@ public class ManualEditorPluginTest {
 
     @Test
     public void testProcessRequest_RegexMatch() throws InterruptedException {
-        when(coreSettings.isInterceptRequests()).thenReturn(true);
+        settings.enabled = true;
         settings.interceptRegexRules = List.of("bad-word");
 
         RequestContext req = new RequestContext(HttpMethod.POST, "/v1/chat", new HttpHeaders(), "this has a bad-word in it");
@@ -122,7 +118,7 @@ public class ManualEditorPluginTest {
 
     @Test
     public void testProcessRequest_RegexNoMatch() {
-        when(coreSettings.isInterceptRequests()).thenReturn(true);
+        settings.enabled = true;
         settings.interceptRegexRules = List.of("bad-word");
 
         RequestContext req = new RequestContext(HttpMethod.POST, "/v1/chat", new HttpHeaders(), "this is clean");
