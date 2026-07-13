@@ -93,7 +93,7 @@ public class HardwareMonitorService {
 					stats.put("gpus", gpus);
 				}
 				process.waitFor();
-			} catch (Exception e) {
+			} catch (java.io.IOException | InterruptedException e) {
 				// Not NVIDIA or nvidia-smi not in PATH
 				nvidiaSmiAvailable = false;
 				log.warn("nvidia-smi not found or failed. VRAM metrics will not be displayed. Currently only NVIDIA GPUs are supported.");

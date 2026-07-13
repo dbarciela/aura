@@ -97,6 +97,67 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.10.3.0</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>High</threshold>
+					<failOnError>true</failOnError>
+					<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+					<plugins>
+						<plugin>
+							<groupId>com.h3xstream.findsecbugs</groupId>
+							<artifactId>findsecbugs-plugin</artifactId>
+							<version>1.14.0</version>
+						</plugin>
+					</plugins>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- PMD & CPD: Falhas de lógica e duplicação massiva -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.28.0</version>
+				<configuration>
+					<minimumPriority>2</minimumPriority>
+					<failOnViolation>true</failOnViolation>
+					<printFailingErrors>true</printFailingErrors>
+					<rulesets>
+						<ruleset>category/java/errorprone.xml</ruleset>
+						<ruleset>category/java/multithreading.xml</ruleset>
+						<ruleset>category/java/security.xml</ruleset>
+					</rulesets>
+					<minimumTokens>150</minimumTokens>
+					<ignoreAnnotations>true</ignoreAnnotations>
+				</configuration>
+				<executions>
+					<execution>
+						<id>pmd-check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+					<execution>
+						<id>cpd-check</id>
+						<goals>
+							<goal>cpd-check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
