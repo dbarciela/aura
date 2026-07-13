@@ -8,10 +8,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class LlamaPropsService {
 
-	private final RestClient restClient;
+	private static final Logger log = LoggerFactory.getLogger(LlamaPropsService.class);
+	private final java.net.http.HttpClient httpClient;
+	private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 	private final String targetServerUrl;
 	private final LiveChatBroadcaster broadcaster;
 
@@ -20,7 +25,9 @@ public class LlamaPropsService {
 	public LlamaPropsService(@Value("${target.server.url}") String targetServerUrl, LiveChatBroadcaster broadcaster) {
 		this.targetServerUrl = targetServerUrl;
 		this.broadcaster = broadcaster;
-		this.restClient = RestClient.builder().build();
+		this.httpClient = java.net.http.HttpClient.newBuilder()
+				.connectTimeout(java.time.Duration.ofSeconds(3))
+				.build();
 	}
 
 	@Scheduled(fixedRate = 10000)
@@ -30,19 +37,25 @@ public class LlamaPropsService {
 					? targetServerUrl.substring(0, targetServerUrl.length() - 3)
 					: targetServerUrl;
 
-			// Assume llama.cpp /props endpoint
-			@SuppressWarnings("unchecked")
-			Map<String, Object> response = restClient.get().uri(baseUrl + "/props").retrieve().body(Map.class);
+			java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+					.uri(java.net.URI.create(baseUrl + "/props"))
+					.timeout(java.time.Duration.ofSeconds(3))
+					.GET()
+					.build();
 
-			if (response != null && response.containsKey("default_generation_settings")) {
-				@SuppressWarnings("unchecked")
-				Map<String, Object> settings = (Map<String, Object>) response.get("default_generation_settings");
-				if (settings.containsKey("n_ctx")) {
-					cachedContextLimit = (Integer) settings.get("n_ctx");
+			java.net.http.HttpResponse<String> responseStr = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+			
+			if (responseStr.statusCode() >= 200 && responseStr.statusCode() < 300) {
+				com.fasterxml.jackson.databind.JsonNode response = mapper.readTree(responseStr.body());
+				if (response != null && response.has("default_generation_settings")) {
+					com.fasterxml.jackson.databind.JsonNode settings = response.get("default_generation_settings");
+					if (settings.has("n_ctx")) {
+						cachedContextLimit = settings.get("n_ctx").asInt();
+					}
 				}
 			}
 		} catch (Exception e) {
-			// Ignore if /props not supported
+			log.trace("Failed to fetch /props, possibly not supported or offline: {}", e.getMessage());
 		}
 
 		if (cachedContextLimit != null) {
