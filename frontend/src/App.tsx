@@ -6,9 +6,11 @@ import { ProgressModal } from './components/ProgressModal';
 import { useBackgroundTasks } from './hooks/useBackgroundTasks';
 import { pluginComponents } from './plugins';
 import { ConfigurationScreen } from './components/ConfigurationScreen';
-import { Activity, ServerCrash, RefreshCw } from 'lucide-react';
+import { Activity, ServerCrash, RefreshCw, Settings, Database } from 'lucide-react';
 import { HardwareWidget } from './components/HardwareWidget';
 import { NetworkIndicator } from './components/NetworkIndicator';
+import { CommandPalette } from './components/CommandPalette';
+import { registerCommand, registerSearchProvider } from './plugins/PluginRegistry';
 import { Toaster, toast } from 'sonner';
 
 export default function App() {
@@ -119,6 +121,66 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    // Register core commands
+    registerCommand({
+      id: 'core.settings',
+      title: 'Open Settings',
+      section: 'Navigation',
+      icon: <Settings className="w-4 h-4" />,
+      perform: () => setActiveTab('settings')
+    });
+    registerCommand({
+      id: 'core.restart',
+      title: 'Restart Llama Server',
+      section: 'System',
+      icon: <RefreshCw className="w-4 h-4" />,
+      perform: () => restartServer()
+    });
+    registerCommand({
+      id: 'core.toggleLogs',
+      title: 'Toggle Network Logs',
+      section: 'System',
+      icon: <Activity className="w-4 h-4" />,
+      perform: () => updateCoreSettings(!isLoggingEnabled)
+    });
+
+    registerSearchProvider({
+      id: 'archive-search',
+      search: async (query: string) => {
+        try {
+          const res = await fetch(`/api/proxy/archive?query=${encodeURIComponent(query)}`);
+          if (!res.ok) return [];
+          const data = await res.json();
+          return data.map((d: any) => ({
+            id: `archive_${d.id}`,
+            title: d.improved_title || d.id,
+            subtitle: new Date(d.timestamp).toLocaleString(),
+            icon: <Database className="w-4 h-4 text-green-400" />,
+            section: 'History (Archive)',
+            perform: () => {
+              setActiveTab('archive');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('open-archive-session', { detail: d.id }));
+              }, 50);
+            }
+          }));
+        } catch {
+          return [];
+        }
+      }
+    });
+
+    globalPlugins.forEach(p => {
+      registerCommand({
+        id: `nav.${p.id}`,
+        title: `Go to ${p.uiTabName}`,
+        section: 'Navigation',
+        perform: () => setActiveTab(p.id)
+      });
+    });
+  }, [isLoggingEnabled, setActiveTab, globalPlugins]);
+
   const allTabs = [
     ...globalPlugins.map((p, idx) => {
 
@@ -219,7 +281,8 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-hidden flex">
+      <main className="flex-1 overflow-hidden flex relative">
+        <CommandPalette />
         {activeTab === 'settings' ? (
           <ConfigurationScreen
             globalPlugins={globalPlugins}

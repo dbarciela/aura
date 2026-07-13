@@ -27,7 +27,21 @@ export function ArchiveBrowser() {
 
   useEffect(() => {
     fetchResults();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+    const handleOpenSession = (e: CustomEvent) => {
+      const id = e.detail;
+      fetchResults().then((data) => {
+        if (data) {
+          const target = data.find((s: any) => s.id === id);
+          if (target) setSelectedSession(target);
+        }
+      });
+    };
+
+    window.addEventListener('open-archive-session', handleOpenSession as EventListener);
+    return () => {
+      window.removeEventListener('open-archive-session', handleOpenSession as EventListener);
+    };
   }, []);
 
   const fetchResults = async (searchQuery?: string) => {
@@ -42,8 +56,10 @@ export function ArchiveBrowser() {
         if (data.length > 0 && !selectedSession) {
           setSelectedSession(data[0]);
         }
+        return data;
       }
     } catch { /* ignore */ }
+    return null;
   };
   
   const handlePurgeAll = async () => {
