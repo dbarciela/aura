@@ -87,15 +87,8 @@ public class TargetServerController {
 			
 			java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
 			java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-			
 			boolean healthy = response.statusCode() >= 200 && response.statusCode() < 300;
 			serverHealthy.set(healthy);
-			
-			if (healthy) {
-				System.out.println("[HealthCheck] SUCCESS: Target " + baseUrl + " is ONLINE. HTTP " + response.statusCode());
-			} else {
-				System.err.println("[HealthCheck] FAILED: Target returned HTTP " + response.statusCode() + " | Body: " + response.body());
-			}
 		} catch (Exception e) {
 			serverHealthy.set(false);
 			System.err.println("[HealthCheck] ERROR: Failed to connect - " + e.getClass().getName() + " - " + e.getMessage());
