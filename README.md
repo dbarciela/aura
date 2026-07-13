@@ -4,6 +4,9 @@ Aura (**Au**gmented **R**equest **A**rchitecture) is a powerful, developer-frien
 
 With Aura, you can seamlessly intercept, modify, monitor, and archive your AI API traffic in real-time.
 
+> [!WARNING]
+> **Disclaimer**: This is a personal project built specifically to satisfy my own development needs. The majority of the codebase was generated using Artificial Intelligence with minimal human code review. While I welcome issue reports and pull requests, **nobody should use this application in production, critical environments, or expose it to the public internet**. It was built for local development and research purposes only.
+
 ---
 
 ## 🌟 Key Features
