@@ -8,6 +8,8 @@ import { pluginComponents } from './plugins';
 import { ConfigurationScreen } from './components/ConfigurationScreen';
 import { Activity, ServerCrash } from 'lucide-react';
 import { HardwareWidget } from './components/HardwareWidget';
+import { NetworkIndicator } from './components/NetworkIndicator';
+import { Toaster, toast } from 'sonner';
 
 export default function App() {
   const [isLoggingEnabled, setIsLoggingEnabled] = useState(false);
@@ -107,9 +109,13 @@ export default function App() {
       setIsLogsOpen(true);
       fetch('/api/proxy/restart-target', { method: 'POST' })
         .then(res => {
-          if (!res.ok) alert('Failed to restart server');
+          if (!res.ok) toast.error('Failed to restart server');
+          else toast.success('Server restart initiated');
         })
-        .catch(err => console.error("Error restarting server:", err));
+        .catch(err => {
+          console.error("Error restarting server:", err);
+          toast.error('Failed to restart server');
+        });
     }
   };
 
@@ -282,9 +288,15 @@ export default function App() {
 
       {/* Status Bar */}
       <footer className="h-6 bg-gray-900 border-t border-gray-800 flex items-center px-4 justify-between z-50">
-        <HardwareWidget />
-        <div className="text-[10px] text-gray-500 font-medium tracking-wider">Aura</div>
+        <div className="flex items-center">
+          <HardwareWidget />
+        </div>
+        <div className="flex items-center">
+          <NetworkIndicator />
+          <div className="text-[10px] text-gray-500 font-medium tracking-wider">Aura</div>
+        </div>
       </footer>
+      <Toaster theme="dark" position="bottom-right" />
     </div>
   );
 }

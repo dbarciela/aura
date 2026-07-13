@@ -41,6 +41,7 @@ public class SettingsController {
 		combined.put("defaultTab", settings.getDefaultTab());
 		combined.put("loggingEnabled", settings.isLoggingEnabled());
 		combined.put("webUiUrl", settings.getWebUiUrl());
+		combined.put("schemaUrl", settings.getSchemaUrl());
 
 		// Return flat structure for backwards compatibility for a moment, or nested
 		// plugins map

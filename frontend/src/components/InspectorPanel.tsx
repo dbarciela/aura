@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Trash2, Code2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface InspectorPanelProps {
   requestId: string | null;
@@ -55,9 +56,32 @@ export function InspectorPanel({ requestId, onProcessed }: InspectorPanelProps) 
       const parsed = JSON.parse(payload);
       setPayload(JSON.stringify(parsed, null, 2));
     } catch (e) {
-      // Just ignore or could alert the user
-      alert("Invalid JSON. Cannot format.");
+      toast.error("Invalid JSON. Cannot format.");
     }
+  };
+
+  const handleEditorWillMount = (monaco: any) => {
+    fetch('/api/proxy/settings')
+      .then(res => res.json())
+      .then(settings => {
+        const schemaUrl = settings.schemaUrl || '/openai-schema.json';
+        if (schemaUrl) {
+          fetch(schemaUrl)
+            .then(r => r.json())
+            .then(schemaObj => {
+              monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                validate: true,
+                schemas: [{
+                  uri: "http://internal/schema.json",
+                  fileMatch: ['*'],
+                  schema: schemaObj
+                }]
+              });
+            })
+            .catch(e => console.warn("Failed to load schema from", schemaUrl, e));
+        }
+      })
+      .catch(() => {});
   };
 
   if (!requestId) {
@@ -108,6 +132,7 @@ export function InspectorPanel({ requestId, onProcessed }: InspectorPanelProps) 
           theme="vs-dark"
           value={payload}
           onChange={(value) => setPayload(value || '')}
+          beforeMount={handleEditorWillMount}
           options={{
             minimap: { enabled: false },
             fontSize: 14,

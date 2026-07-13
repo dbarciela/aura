@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bell, X, ExternalLink, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import type { BackgroundTask } from '../hooks/useBackgroundTasks';
 
 export interface NotificationAction {
@@ -65,6 +66,18 @@ export function NotificationArea({ onChangeTab, onStartStream, tasks = [], onOpe
                     const newNotif = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
                     setNotifications(prev => {
                         if (prev.find(n => n.id === newNotif.id)) return prev;
+                        
+                        // Show Sonner toast
+                        if (newNotif.level === 'error') {
+                            toast.error(newNotif.title, { description: newNotif.message });
+                        } else if (newNotif.level === 'warning') {
+                            toast.warning(newNotif.title, { description: newNotif.message });
+                        } else if (newNotif.level === 'success') {
+                            toast.success(newNotif.title, { description: newNotif.message });
+                        } else {
+                            toast.info(newNotif.title, { description: newNotif.message });
+                        }
+
                         return [newNotif, ...prev];
                     });
                 }

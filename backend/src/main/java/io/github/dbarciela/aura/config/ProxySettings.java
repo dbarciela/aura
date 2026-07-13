@@ -34,4 +34,15 @@ public class ProxySettings {
 	public void setWebUiUrl(String webUiUrl) {
 		this.webUiUrl = webUiUrl;
 	}
+
+	@Value("${aura.schema.url:/openai-schema.json}")
+	private String schemaUrl;
+
+	public String getSchemaUrl() {
+		return schemaUrl;
+	}
+
+	public void setSchemaUrl(String schemaUrl) {
+		this.schemaUrl = schemaUrl;
+	}
 }
