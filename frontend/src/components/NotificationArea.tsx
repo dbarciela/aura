@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bell, X, ExternalLink, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { sseService } from '../services/sseService';
 import type { BackgroundTask } from '../hooks/useBackgroundTasks';
 
 export interface NotificationAction {
@@ -46,46 +47,41 @@ export function NotificationArea({ onChangeTab, onStartStream, tasks = [], onOpe
     const [isOpen, setIsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
 
+    const fetchNotifications = () => {
+        fetch('/api/proxy/notifications')
+            .then(r => r.json())
+            .then(data => setNotifications(data))
+            .catch(() => {});
+    };
+
     useEffect(() => {
-        const fetchNotifs = () => {
-            fetch('/api/proxy/notifications')
-                .then(r => r.json())
-                .then(data => setNotifications(data))
-                .catch(() => {});
-        };
-        
-        fetchNotifs();
-        const interval = setInterval(fetchNotifs, 10000);
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 10000);
 
-        const evtSource = new EventSource('/api/proxy/live');
-        
-        evtSource.addEventListener('live-chat', (event) => {
-            try {
-                const payload = JSON.parse(event.data);
-                if (payload.type === 'NOTIFICATION') {
-                    const newNotif = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
-                    setNotifications(prev => {
-                        if (prev.find(n => n.id === newNotif.id)) return prev;
-                        
-                        // Show Sonner toast
-                        if (newNotif.level === 'error') {
-                            toast.error(newNotif.title, { description: newNotif.message });
-                        } else if (newNotif.level === 'warning') {
-                            toast.warning(newNotif.title, { description: newNotif.message });
-                        } else if (newNotif.level === 'success') {
-                            toast.success(newNotif.title, { description: newNotif.message });
-                        } else {
-                            toast.info(newNotif.title, { description: newNotif.message });
-                        }
+        const unsubscribe = sseService.subscribe((payload: any) => {
+            if (payload.type === 'NOTIFICATION') {
+                const newNotif = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
+                setNotifications(prev => {
+                    if (prev.find(n => n.id === newNotif.id)) return prev;
+                    
+                    // Show Sonner toast
+                    if (newNotif.level === 'error') {
+                        toast.error(newNotif.title, { description: newNotif.message });
+                    } else if (newNotif.level === 'warning') {
+                        toast.warning(newNotif.title, { description: newNotif.message });
+                    } else if (newNotif.level === 'success') {
+                        toast.success(newNotif.title, { description: newNotif.message });
+                    } else {
+                        toast.info(newNotif.title, { description: newNotif.message });
+                    }
 
-                        return [newNotif, ...prev];
-                    });
-                }
-            } catch(e) { /* ignore parse errors */ }
+                    return [newNotif, ...prev];
+                });
+            }
         });
 
         return () => {
-            evtSource.close();
+            unsubscribe();
             clearInterval(interval);
         };
     }, []);

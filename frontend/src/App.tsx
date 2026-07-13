@@ -6,7 +6,7 @@ import { ProgressModal } from './components/ProgressModal';
 import { useBackgroundTasks } from './hooks/useBackgroundTasks';
 import { pluginComponents } from './plugins';
 import { ConfigurationScreen } from './components/ConfigurationScreen';
-import { Activity, ServerCrash } from 'lucide-react';
+import { Activity, ServerCrash, RefreshCw } from 'lucide-react';
 import { HardwareWidget } from './components/HardwareWidget';
 import { NetworkIndicator } from './components/NetworkIndicator';
 import { Toaster, toast } from 'sonner';
@@ -206,28 +206,7 @@ export default function App() {
         </div>
         
         <div className="flex items-center space-x-6">
-
           <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setIsLogsOpen(true)}
-              title="Click to view target server logs"
-              className="flex items-center space-x-2 bg-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-700 transition-colors cursor-pointer border border-gray-700"
-            >
-              {serverHealthy ? <Activity className="w-4 h-4 text-green-400" /> : <ServerCrash className="w-4 h-4 text-red-400" />}
-              <span className={`text-sm font-medium ${serverHealthy ? 'text-green-400' : 'text-red-400'}`}>
-                {serverHealthy ? 'Llama Online' : 'Llama Offline'}
-              </span>
-            </button>
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={restartServer}
-                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-700 flex items-center space-x-2"
-              >
-                <Activity className="w-4 h-4" />
-                <span>Restart Server</span>
-              </button>
-            </div>
-            
             <div className="h-8 w-px bg-gray-700 mx-2"></div>
             <NotificationArea 
               onChangeTab={setActiveTab} 
@@ -291,9 +270,27 @@ export default function App() {
         <div className="flex items-center">
           <HardwareWidget />
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
           <NetworkIndicator />
-          <div className="text-[10px] text-gray-500 font-medium tracking-wider">Aura</div>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setIsLogsOpen(true)}
+              title="Click to view target server logs"
+              className="flex items-center space-x-1 hover:text-gray-300 transition-colors cursor-pointer"
+            >
+              {serverHealthy ? <Activity className="w-3 h-3 text-green-400" /> : <ServerCrash className="w-3 h-3 text-red-400" />}
+              <span className={`text-[10px] font-medium uppercase tracking-widest ${serverHealthy ? 'text-green-400' : 'text-red-400'}`}>
+                {serverHealthy ? 'Llama Online' : 'Llama Offline'}
+              </span>
+            </button>
+            <button 
+              onClick={restartServer}
+              title="Restart Server"
+              className="text-gray-500 hover:text-gray-300 transition-colors flex items-center"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       </footer>
       <Toaster theme="dark" position="bottom-right" />

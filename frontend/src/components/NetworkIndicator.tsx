@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
+import { sseService } from '../services/sseService';
 
 export function NetworkIndicator() {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    const es = new EventSource('/api/proxy/live');
-    
     let timeout: ReturnType<typeof setTimeout>;
 
     const ping = () => {
@@ -14,17 +13,14 @@ export function NetworkIndicator() {
       timeout = setTimeout(() => setIsActive(false), 500);
     };
 
-    es.addEventListener('live-chat', (e: any) => {
-      try {
-        const payload = JSON.parse(e.data);
-        if (payload.type === 'REQUEST' || payload.type === 'CHUNK' || payload.type === 'DONE') {
-          ping();
-        }
-      } catch { /* ignore */ }
+    const unsubscribe = sseService.subscribe((payload: any) => {
+      if (payload.type === 'REQUEST' || payload.type === 'CHUNK' || payload.type === 'DONE') {
+        ping();
+      }
     });
 
     return () => {
-      es.close();
+      unsubscribe();
       clearTimeout(timeout);
     };
   }, []);

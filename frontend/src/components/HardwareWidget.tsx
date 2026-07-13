@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cpu, MemoryStick, MonitorDot } from 'lucide-react';
+import { sseService } from '../services/sseService';
 
 interface GpuStat {
   name: string;
@@ -29,18 +30,16 @@ export function HardwareWidget() {
   const [stats, setStats] = useState<HardwareStats | null>(null);
 
   useEffect(() => {
-    const es = new EventSource('/api/proxy/live');
-    
-    es.addEventListener('live-chat', (e: any) => {
-      try {
-        const payload = JSON.parse(e.data);
-        if (payload.type === 'HARDWARE') {
-          setStats(payload.data);
-        }
-      } catch { /* ignore */ }
+    const unsubscribe = sseService.subscribe((payload: any) => {
+      if (payload.type === 'HARDWARE') {
+        const data = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
+        setStats(data);
+      }
     });
 
-    return () => es.close();
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (!stats) return null;

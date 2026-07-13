@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Download } from 'lucide-react';
 import { ChatViewer } from './ChatViewer';
+import { sseService } from '../services/sseService';
 import { downloadStringAsFile } from '../utils/downloadUtils';
 import { parseLlamaResponse } from '../utils/chatParser';
 
@@ -35,13 +36,10 @@ export default function LiveChatPanel() {
   };
   
   useEffect(() => {
-    const es = new EventSource('/api/proxy/live');
-    
     let currentAssistantContent = "";
     let currentToolCalls: any[] = [];
 
-    es.addEventListener('live-chat', (e: any) => {
-      const payload = JSON.parse(e.data);
+    const unsubscribe = sseService.subscribe((payload: any) => {
       if (payload.type === 'REQUEST') {
         try {
             const req = JSON.parse(payload.data);
@@ -136,7 +134,7 @@ export default function LiveChatPanel() {
       }
     });
 
-    return () => es.close();
+    return () => unsubscribe();
   }, []);
 
   const handleDownload = () => {
