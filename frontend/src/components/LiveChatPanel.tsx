@@ -24,7 +24,6 @@ export default function LiveChatPanel() {
     
     let currentAssistantContent = "";
     let currentToolCalls: any[] = [];
-    let isStream = false;
 
     es.addEventListener('live-chat', (e: any) => {
       const payload = JSON.parse(e.data);
@@ -35,32 +34,47 @@ export default function LiveChatPanel() {
                 setMessages(req.messages);
                 currentAssistantContent = "";
                 currentToolCalls = [];
-                isStream = false;
             }
         } catch { /* ignore */ }
       } else if (payload.type === 'CHUNK') {
-         isStream = true;
-         if (payload.data !== '[DONE]') {
+         if (payload.data && payload.data.includes('data: ')) {
+             const lines = payload.data.split('\n');
+             for (const line of lines) {
+                 if (line.startsWith('data: ')) {
+                     const jsonStr = line.substring(6);
+                     if (jsonStr.trim() === '[DONE]') continue;
+                     try {
+                         const chunk = JSON.parse(jsonStr);
+                         if (chunk.choices && chunk.choices[0].delta) {
+                             const delta = chunk.choices[0].delta;
+                             if (delta.content) {
+                                 currentAssistantContent += delta.content;
+                             }
+                             if (delta.tool_calls) {
+                                 for (const tc of delta.tool_calls) {
+                                     const index = tc.index;
+                                     if (!currentToolCalls[index]) {
+                                         currentToolCalls[index] = {
+                                             id: tc.id,
+                                             type: tc.type || 'function',
+                                             function: { name: tc.function?.name || '', arguments: tc.function?.arguments || '' }
+                                         };
+                                     } else if (tc.function?.arguments) {
+                                         currentToolCalls[index].function.arguments += tc.function.arguments;
+                                     }
+                                 }
+                             }
+                         }
+                     } catch { /* ignore */ }
+                 }
+             }
+         } else if (payload.data !== '[DONE]') {
              try {
                  const chunk = JSON.parse(payload.data);
                  if (chunk.choices && chunk.choices[0].delta) {
                      const delta = chunk.choices[0].delta;
                      if (delta.content) {
                          currentAssistantContent += delta.content;
-                     }
-                     if (delta.tool_calls) {
-                         for (const tc of delta.tool_calls) {
-                             const index = tc.index;
-                             if (!currentToolCalls[index]) {
-                                 currentToolCalls[index] = {
-                                     id: tc.id,
-                                     type: tc.type || 'function',
-                                     function: { name: tc.function?.name || '', arguments: tc.function?.arguments || '' }
-                                 };
-                             } else if (tc.function?.arguments) {
-                                 currentToolCalls[index].function.arguments += tc.function.arguments;
-                             }
-                         }
                      }
                  }
              } catch { /* ignore */ }
@@ -81,7 +95,7 @@ export default function LiveChatPanel() {
              return newMsgs;
          });
       } else if (payload.type === 'DONE') {
-          if (!isStream && payload.data) {
+          if (payload.data) {
               const finalMsg = parseLlamaResponse(payload.data);
               if (finalMsg && finalMsg.role === 'assistant') {
                   setMessages(prev => {

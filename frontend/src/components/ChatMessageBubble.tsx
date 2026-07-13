@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeAgentXml from '../utils/rehypeAgentXml';
 import { sanitizeXmlTags } from '../utils/sanitizeXmlTags';
@@ -43,7 +44,7 @@ export function ChatMessageBubble({ msg, collapseXmlMode }: ChatMessageBubblePro
         {msg.content && (
             <div className="prose prose-invert prose-sm max-w-none">
               <ReactMarkdown 
-                  remarkPlugins={[remarkBreaks]}
+                  remarkPlugins={[remarkBreaks, remarkGfm]}
                   rehypePlugins={[rehypeRaw as any, [rehypeAgentXml, { collapseAllButUserRequest: collapseXmlMode }]]}
               >
                 {sanitizeXmlTags(msg.content)}

@@ -48,3 +48,10 @@ Este documento lista as funcionalidades planeadas para o Aura, focadas em melhor
     - Modificar o `RequestContext` para expor o `InputStream` para os plugins que sejam streaming puros.
     - Atualizar a interface do Frontend para exibir as *badges* ⚡ (Streaming), 🔄 (Async) e ⚠️ (Buffering) - *Concluído!*
     - Converter o `FormatFixerPlugin` para Streaming puro, deixando o `ContextDeduplicatorPlugin` (sliding window complexa) e o `ManualEditorPlugin` como Buffering.
+
+## ✨ 5. UX/UI & Quality of Life Improvements
+- [ ] **Intelligent Auto-Scroll in Live Chat**: The live chat should stop auto-scrolling if the user scrolls up to read past messages, and provide a "⬇️ Scroll to Bottom" button to resume following the live stream.
+- [ ] **Monaco Editor IntelliSense (JSON Schema)**: Inject the official OpenAI Chat Completion JSON schema into the Manual Editor. This will provide autocompletion (Ctrl+Space), real-time validation, and hover tooltips for all properties (e.g., `temperature`, `max_tokens`, `messages`).
+- [ ] **Global Search Palette (Cmd/Ctrl + K)**: A global search overlay modal that taps into the FTS5 SQLite database, allowing the user to search the entire chat history instantly from anywhere in the app and jump straight to the relevant Archive session.
+- [ ] **Modern Toast Notifications**: Replace intrusive SSE alerts for minor system events (like "Settings Saved") with a modern, stackable toast notification library (e.g., Sonner).
+- [ ] **Network Traffic Indicator**: Add a subtle pulsing green dot or mini-graph in the bottom Status Bar that flashes whenever the proxy is actively forwarding packets or streaming chunks, giving an immediate tactical feel that the system is "thinking".
