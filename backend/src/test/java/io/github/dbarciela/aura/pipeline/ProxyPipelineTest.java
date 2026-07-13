@@ -33,9 +33,11 @@ public class ProxyPipelineTest {
 
 		when(plugin1.getId()).thenReturn("plugin-1");
 		when(plugin1.getDefaultSettings()).thenReturn("settings-1");
+		when(plugin1.isBuffering()).thenReturn(true);
 
 		when(plugin2.getId()).thenReturn("plugin-2");
 		when(plugin2.getDefaultSettings()).thenReturn("settings-2");
+		when(plugin2.isBuffering()).thenReturn(true);
 	}
 
 	@Test

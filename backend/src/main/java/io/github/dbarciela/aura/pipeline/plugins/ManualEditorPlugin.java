@@ -98,6 +98,10 @@ public class ManualEditorPlugin implements BufferingPlugin {
 			pluginSettings = new ManualEditorSettings();
 		}
 
+		if (!pluginSettings.enabled) {
+			return;
+		}
+
 		boolean matchesRegex = false;
 		List<String> regexRules = pluginSettings.interceptRegexRules;
 		if (regexRules != null && !regexRules.isEmpty()) {
@@ -152,6 +156,10 @@ public class ManualEditorPlugin implements BufferingPlugin {
 		ManualEditorSettings pluginSettings = settingsManager.getSettingsAs(getId(), ManualEditorSettings.class);
 		if (pluginSettings == null) {
 			pluginSettings = new ManualEditorSettings();
+		}
+
+		if (!pluginSettings.enabled) {
+			return;
 		}
 
 		boolean shouldIntercept = false;
