@@ -47,3 +47,9 @@ frontend/node_modules/
 # Backups
 *.bak
 session-*.json
+
+# Windows Shortcuts
+*.lnk
+
+# Built Frontend Assets
+backend/src/main/resources/static/

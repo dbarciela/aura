@@ -17,7 +17,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('');
   const [defaultTab, setDefaultTab] = useState<string>('live-chat-plugin');
   const [isLogsOpen, setIsLogsOpen] = useState(false);
-  
+
   const { tasks, startTask, minimizeTask, openTask, closeTask } = useBackgroundTasks();
 
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
@@ -71,7 +71,7 @@ export default function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tab: activeTab })
-    }).catch(() => {});
+    }).catch(() => { });
   }, [activeTab]);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function App() {
     fetch('/api/proxy/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         loggingEnabled: logging
       })
     }).catch(err => console.error("Error updating settings:", err));
@@ -129,7 +129,7 @@ export default function App() {
           order: idx * 10,
           icon: undefined,
           renderAction: p.hasUiToggle ? () => (
-            <button 
+            <button
               onClick={() => updateCoreSettings(!isLoggingEnabled)}
               className={`ml-1 w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${isLoggingEnabled ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'}`}
               title={isLoggingEnabled ? "Disable Network Logging" : "Enable Network Logging"}
@@ -154,7 +154,7 @@ export default function App() {
         renderAction: p.hasUiToggle ? () => {
           const enabled = pluginSettings[p.id]?.enabled || false;
           return (
-            <button 
+            <button
               onClick={(e) => { e.stopPropagation(); updatePluginSettings(p.id, { ...pluginSettings[p.id], enabled: !enabled }); }}
               className={`ml-1 w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${enabled ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'}`}
               title={enabled ? `Disable ${p.name}` : `Enable ${p.name}`}
@@ -177,18 +177,18 @@ export default function App() {
       {/* Top Toolbar */}
       <header className="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800 shadow-md z-50 relative">
         <div className="flex items-center space-x-6">
-          <h1 
+          <h1
             onClick={() => setActiveTab('settings')}
             className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
             title="Open Global Configuration"
           >
             Aura
           </h1>
-          
+
           <div className="flex space-x-2 bg-gray-800 p-1 rounded-lg">
             {allTabs.filter(tab => !hiddenTabs.includes(tab.id)).map(tab => (
               <div key={tab.id} className="flex items-center space-x-1 pl-2">
-                <button 
+                <button
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 rounded-md transition-colors flex items-center space-x-2 ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
                 >
@@ -204,12 +204,12 @@ export default function App() {
             ))}
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
             <div className="h-8 w-px bg-gray-700 mx-2"></div>
-            <NotificationArea 
-              onChangeTab={setActiveTab} 
+            <NotificationArea
+              onChangeTab={setActiveTab}
               onStartStream={(url) => startTask(url, "Updating Llama.cpp")}
               tasks={tasks}
               onOpenTask={openTask}
@@ -221,7 +221,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 overflow-hidden flex">
         {activeTab === 'settings' ? (
-          <ConfigurationScreen 
+          <ConfigurationScreen
             globalPlugins={globalPlugins}
             updatePluginOrder={(newOrder: string[]) => {
               fetch('/api/proxy/plugins/order', {
@@ -250,11 +250,11 @@ export default function App() {
           )
         )}
       </main>
-      
-      <LogViewerModal 
-        isOpen={isLogsOpen} 
-        onClose={() => setIsLogsOpen(false)} 
-        serverHealthy={serverHealthy} 
+
+      <LogViewerModal
+        isOpen={isLogsOpen}
+        onClose={() => setIsLogsOpen(false)}
+        serverHealthy={serverHealthy}
         targetUrl={targetUrl}
         webUiUrl={webUiUrl}
       />
@@ -273,17 +273,17 @@ export default function App() {
         <div className="flex items-center space-x-4">
           <NetworkIndicator />
           <div className="flex items-center space-x-3">
-            <button 
+            <button
               onClick={() => setIsLogsOpen(true)}
               title="Click to view target server logs"
               className="flex items-center space-x-1 hover:text-gray-300 transition-colors cursor-pointer"
             >
               {serverHealthy ? <Activity className="w-3 h-3 text-green-400" /> : <ServerCrash className="w-3 h-3 text-red-400" />}
               <span className={`text-[10px] font-medium uppercase tracking-widest ${serverHealthy ? 'text-green-400' : 'text-red-400'}`}>
-                {serverHealthy ? 'Llama Online' : 'Llama Offline'}
+                {serverHealthy ? 'Online' : 'Offline'}
               </span>
             </button>
-            <button 
+            <button
               onClick={restartServer}
               title="Restart Server"
               className="text-gray-500 hover:text-gray-300 transition-colors flex items-center"
