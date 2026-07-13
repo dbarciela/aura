@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import io.github.dbarciela.aura.config.PluginSettingsManager;
 import io.github.dbarciela.aura.pipeline.BufferingPlugin;
@@ -29,8 +29,8 @@ public class ContextDeduplicatorPlugin implements BufferingPlugin {
 
 
 	// Global stats
-	private int globalSavedChars = 0;
-	private int globalTotalOriginalChars = 0;
+	private int globalSavedChars;
+	private int globalTotalOriginalChars;
 	private final Map<String, String> globalDeduplicatedBlocks = new ConcurrentHashMap<>();
 
 	public Map<String, Object> getStats() {
@@ -48,7 +48,7 @@ public class ContextDeduplicatorPlugin implements BufferingPlugin {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class DeduplicatorSettings {
-		public boolean enabled = false;
+		public boolean enabled;
 		public int threshold = 500;
 	}
 
@@ -176,7 +176,7 @@ public class ContextDeduplicatorPlugin implements BufferingPlugin {
 										? matchedText.substring(matchedText.length() - 30).replace("\n", " ")
 										: "";
 								String replacement = String.format(
-										"\n\n[Duplicated context omitted: %d chars match earlier context. Starts with \"%s...\" and ends with \"...%s\"]\n\n",
+										"%n%n[Duplicated context omitted: %d chars match earlier context. Starts with \"%s...\" and ends with \"...%s\"]%n%n",
 										matchLen, prefix, suffix);
 
 								newContent.append(replacement);

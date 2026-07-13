@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+
 import org.springframework.stereotype.Component;
 
 import io.github.dbarciela.aura.config.PluginSettingsManager;
@@ -120,9 +121,6 @@ public class ProxyPipeline {
 		ManualEditorPlugin.ManualEditorSettings manualSettings = pluginSettingsManager
 				.getSettingsAs("manual-editor",
 						ManualEditorPlugin.ManualEditorSettings.class);
-		if (manualSettings != null && manualSettings.enabled) {
-			return true;
-		}
-		return false;
+		return manualSettings != null && manualSettings.enabled;
 	}
 }

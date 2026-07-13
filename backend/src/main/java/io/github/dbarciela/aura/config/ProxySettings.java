@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProxySettings {
-	private boolean loggingEnabled = false;
+	private boolean loggingEnabled;
 	private String defaultTab = "live-chat-plugin";
 
 	public String getDefaultTab() {

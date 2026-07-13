@@ -3,9 +3,9 @@ package io.github.dbarciela.aura.pipeline;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
 
 import io.github.dbarciela.aura.db.NotificationRepository;
 

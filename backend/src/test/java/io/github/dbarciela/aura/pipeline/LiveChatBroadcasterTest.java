@@ -2,6 +2,7 @@ package io.github.dbarciela.aura.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

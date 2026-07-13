@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,14 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.github.dbarciela.aura.pipeline.LiveChatBroadcaster;
 import io.github.dbarciela.aura.pipeline.ProxyPipeline;
 import io.github.dbarciela.aura.pipeline.RequestContext;
 import io.github.dbarciela.aura.pipeline.ResponseContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class ProxyController {
@@ -93,7 +93,7 @@ public class ProxyController {
 			httpHeaders.remove(HttpHeaders.CONTENT_LENGTH);
 		}).body(reqCtx.getPayload().getBytes(StandardCharsets.UTF_8)).exchange((clientRequest, clientResponse) -> {
 			long startTime = System.currentTimeMillis();
-			long[] ttft = { -1 };
+			long[] ttft = {-1};
 
 			// Set response status
 			response.setStatus(clientResponse.getStatusCode().value());
@@ -102,7 +102,7 @@ public class ProxyController {
 			if (!pipeline.requiresResponseBuffering()) {
 				// STREAMING MODE
 				respHeaders.forEach((key, values) -> {
-					if (!key.equalsIgnoreCase(HttpHeaders.TRANSFER_ENCODING)) {
+					if (!HttpHeaders.TRANSFER_ENCODING.equalsIgnoreCase(key)) {
 						for (String value : values) {
 							response.addHeader(key, value);
 						}
@@ -169,8 +169,8 @@ public class ProxyController {
 
 					// Set headers, overriding Content-Length with the new accurate length
 					respHeaders.forEach((key, values) -> {
-						if (!key.equalsIgnoreCase(HttpHeaders.TRANSFER_ENCODING)
-								&& !key.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)) {
+						if (!HttpHeaders.TRANSFER_ENCODING.equalsIgnoreCase(key)
+								&& !HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(key)) {
 							for (String value : values) {
 								response.addHeader(key, value);
 							}
@@ -184,9 +184,6 @@ public class ProxyController {
 					} catch (IOException e) {
 						// Client disconnected
 					}
-				} else {
-					// The LiveChatPlugin handles broadcastDone("") when dropped in its
-					// processResponse
 				}
 			}
 

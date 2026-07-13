@@ -2,6 +2,7 @@ package io.github.dbarciela.aura.pipeline;
 
 import java.util.Map;
 
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class LlamaPropsService {
 	private final String targetServerUrl;
 	private final LiveChatBroadcaster broadcaster;
 
-	private Integer cachedContextLimit = null;
+	private Integer cachedContextLimit;
 
 	public LlamaPropsService(@Value("${target.server.url}") String targetServerUrl, LiveChatBroadcaster broadcaster) {
 		this.targetServerUrl = targetServerUrl;

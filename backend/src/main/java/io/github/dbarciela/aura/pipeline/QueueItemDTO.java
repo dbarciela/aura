@@ -1,11 +1,11 @@
 package io.github.dbarciela.aura.pipeline;
 
 public class QueueItemDTO {
-	private String id;
-	private String method;
-	private String uri;
-	private String payload;
-	private String phase; // "REQUEST" or "RESPONSE"
+	private final String id;
+	private final String method;
+	private final String uri;
+	private final String payload;
+	private final String phase; // "REQUEST" or "RESPONSE"
 
 	public QueueItemDTO(String id, String method, String uri, String payload, String phase) {
 		this.id = id;

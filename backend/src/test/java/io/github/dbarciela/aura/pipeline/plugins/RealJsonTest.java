@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -36,9 +37,9 @@ public class RealJsonTest {
 		when(settingsManager.getSettingsAs("context-deduplicator",
 				ContextDeduplicatorPlugin.DeduplicatorSettings.class)).thenReturn(settings);
 
-		String[] files = { "session-013e86d7-44d5-446d-a6c7-f3a7f3f47958.json",
+		String[] files = {"session-013e86d7-44d5-446d-a6c7-f3a7f3f47958.json",
 				"session-281f8fea-b662-4db7-82b9-065b2816e320.json",
-				"session-8ae51dd3-7e0c-42b7-9cd1-acb4425db805.json" };
+				"session-8ae51dd3-7e0c-42b7-9cd1-acb4425db805.json"};
 
 		for (String file : files) {
 			String path = "c:/ai/workspace/llmproxy/backend/" + file;

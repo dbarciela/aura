@@ -6,11 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import io.github.dbarciela.aura.config.PluginSettingsManager;
 import io.github.dbarciela.aura.pipeline.BufferingPlugin;
@@ -51,8 +51,8 @@ public class ManualEditorPlugin implements BufferingPlugin {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class ManualEditorSettings {
-		public boolean enabled = false;
-		public boolean interceptInvalidJson = false;
+		public boolean enabled;
+		public boolean interceptInvalidJson;
 		public List<String> interceptRegexRules = new ArrayList<>();
 	}
 

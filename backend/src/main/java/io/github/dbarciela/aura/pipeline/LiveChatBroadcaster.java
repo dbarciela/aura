@@ -10,10 +10,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Component
 public class LiveChatBroadcaster {
@@ -24,9 +24,9 @@ public class LiveChatBroadcaster {
 	private final Map<SseEmitter, ClientWorker> clients = new ConcurrentHashMap<>();
 
 	// State preservation for new clients
-	private String lastRequestId = null;
-	private String lastRequestPayload = null;
-	private String lastDonePayload = null;
+	private String lastRequestId;
+	private String lastRequestPayload;
+	private String lastDonePayload;
 	private final List<String> lastChunks = Collections
 			.synchronizedList(new ArrayList<>());
 
