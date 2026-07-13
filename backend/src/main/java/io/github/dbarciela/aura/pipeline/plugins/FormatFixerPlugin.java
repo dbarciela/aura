@@ -3,13 +3,16 @@ package io.github.dbarciela.aura.pipeline.plugins;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import io.github.dbarciela.aura.pipeline.BufferingPlugin;
+import io.github.dbarciela.aura.pipeline.StreamingPlugin;
 import io.github.dbarciela.aura.pipeline.RequestContext;
 import io.github.dbarciela.aura.pipeline.ResponseContext;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 
 @Component
 @Order(20)
-public class FormatFixerPlugin implements BufferingPlugin {
+public class FormatFixerPlugin implements StreamingPlugin {
 
 	public static class FormatFixerSettings {
 		public boolean enabled = true;
@@ -51,13 +54,15 @@ public class FormatFixerPlugin implements BufferingPlugin {
 	}
 
 	@Override
-	public void processRequest(RequestContext context) {
+	public void processRequestStream(InputStream in, OutputStream out, RequestContext context) throws IOException {
 		// Pass-through implementation for now.
-		// Future-proofing for automated JSON schema fixes.
+		// Future-proofing for automated JSON schema fixes on streams.
+		in.transferTo(out);
 	}
 
 	@Override
-	public void processResponse(ResponseContext context) {
+	public void processResponseStream(InputStream in, OutputStream out, ResponseContext context) throws IOException {
 		// Pass-through
+		in.transferTo(out);
 	}
 }
