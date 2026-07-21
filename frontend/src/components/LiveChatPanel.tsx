@@ -8,29 +8,68 @@ import { parseLlamaResponse } from '../utils/chatParser';
 export default function LiveChatPanel() {
   const [messages, setMessages] = useState<any[]>([]);
   const [collapseXmlMode, setCollapseXmlMode] = useState(true);
+  const [smartScrollEnabled, setSmartScrollEnabled] = useState(true);
   const [liveScroll, setLiveScroll] = useState(true);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastScrollTopRef = useRef<number>(0);
+  const isProgrammaticScrollRef = useRef<boolean>(false);
   
   const [metrics, setMetrics] = useState<any>(null);
   const [contextLimit, setContextLimit] = useState<number | null>(null);
   
   useEffect(() => {
-    if (liveScroll && scrollRef.current) {
+    if (smartScrollEnabled && liveScroll && scrollRef.current) {
+      isProgrammaticScrollRef.current = true;
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      lastScrollTopRef.current = scrollRef.current.scrollTop;
     }
-  }, [messages, liveScroll]);
+  }, [messages, smartScrollEnabled, liveScroll]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!smartScrollEnabled) return;
+      if (e.deltaY < 0) {
+        setLiveScroll(false);
+        setShowScrollBottom(true);
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: true });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [smartScrollEnabled]);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
-    
+
+    if (isProgrammaticScrollRef.current) {
+      isProgrammaticScrollRef.current = false;
+      lastScrollTopRef.current = scrollTop;
+      return;
+    }
+
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 40;
+    const scrolledUp = scrollTop < lastScrollTopRef.current - 5;
+    lastScrollTopRef.current = scrollTop;
+
+    if (!smartScrollEnabled) {
+      setShowScrollBottom(!isAtBottom);
+      return;
+    }
+
     if (isAtBottom) {
       setLiveScroll(true);
       setShowScrollBottom(false);
-    } else {
+    } else if (scrolledUp) {
       setLiveScroll(false);
+      setShowScrollBottom(true);
+    } else {
       setShowScrollBottom(true);
     }
   };
@@ -145,9 +184,32 @@ export default function LiveChatPanel() {
 
   return (
     <div className="flex-1 bg-gray-950 flex flex-col overflow-hidden relative">
-      <div className="absolute top-4 right-6 z-10 flex space-x-2">
+      <div className="absolute top-4 right-6 z-10 flex items-center space-x-2">
+        <label className="flex items-center space-x-2 text-xs text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800 cursor-pointer hover:text-gray-200 transition-colors">
+          <input 
+            type="checkbox" 
+            checked={smartScrollEnabled} 
+            onChange={e => {
+              const enabled = e.target.checked;
+              setSmartScrollEnabled(enabled);
+              if (enabled) {
+                setLiveScroll(true);
+                setShowScrollBottom(false);
+                if (scrollRef.current) {
+                  isProgrammaticScrollRef.current = true;
+                  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                  lastScrollTopRef.current = scrollRef.current.scrollTop;
+                }
+              } else {
+                setLiveScroll(false);
+              }
+            }} 
+            className="rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500"
+          />
+          <span>Smart Scroll</span>
+        </label>
 
-        <label className="flex items-center space-x-2 text-xs text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800 cursor-pointer hover:text-gray-200">
+        <label className="flex items-center space-x-2 text-xs text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800 cursor-pointer hover:text-gray-200 transition-colors">
           <input 
             type="checkbox" 
             checked={collapseXmlMode} 
@@ -156,6 +218,7 @@ export default function LiveChatPanel() {
           />
           <span>Smart Collapse XML</span>
         </label>
+
         <button
           onClick={handleDownload}
           title="Download Chat as Markdown"
@@ -165,6 +228,7 @@ export default function LiveChatPanel() {
           <span>Download</span>
         </button>
       </div>
+
       <div 
         ref={scrollRef}
         onScroll={handleScroll}
@@ -182,10 +246,14 @@ export default function LiveChatPanel() {
       {showScrollBottom && (
         <button
           onClick={() => {
-            setLiveScroll(true);
+            if (smartScrollEnabled) {
+              setLiveScroll(true);
+            }
             setShowScrollBottom(false);
             if (scrollRef.current) {
+              isProgrammaticScrollRef.current = true;
               scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+              lastScrollTopRef.current = scrollRef.current.scrollTop;
             }
           }}
           className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800/90 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-full shadow-lg border border-gray-600 text-sm font-medium flex items-center space-x-2 transition-colors z-20 backdrop-blur-sm"
