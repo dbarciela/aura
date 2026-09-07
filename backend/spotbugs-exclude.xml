@@ -5,4 +5,20 @@
         <Class name="io.github.dbarciela.aura.controller.ProxyController" />
         <Bug pattern="SPRING_CSRF_UNRESTRICTED_REQUEST_MAPPING" />
     </Match>
+    <Match>
+        <Class name="io.github.dbarciela.aura.controller.TargetServerController" />
+        <Bug pattern="COMMAND_INJECTION" />
+    </Match>
+    <Match>
+        <Class name="io.github.dbarciela.aura.controller.TargetServerController" />
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+    </Match>
+    <Match>
+        <Class name="io.github.dbarciela.aura.config.ProxySettings$RestartCommand" />
+        <Bug pattern="COMMAND_INJECTION" />
+    </Match>
+    <Match>
+        <Class name="io.github.dbarciela.aura.config.ProxySettings$RestartCommand" />
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+    </Match>
 </FindBugsFilter>
