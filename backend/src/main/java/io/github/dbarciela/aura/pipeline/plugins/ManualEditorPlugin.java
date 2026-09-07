@@ -2,6 +2,7 @@ package io.github.dbarciela.aura.pipeline.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
@@ -29,6 +30,7 @@ public class ManualEditorPlugin implements BufferingPlugin {
 	private final ConcurrentHashMap<String, Object> queue = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, CountDownLatch> latches = new ConcurrentHashMap<>();
 	private final List<String> order = new ArrayList<>(); // To maintain custom order if needed
+	private final Map<String, Pattern> patternCache = new ConcurrentHashMap<>();
 
 	public ManualEditorPlugin(PluginSettingsManager settingsManager,
 			NotificationService notificationService) {
@@ -109,7 +111,7 @@ public class ManualEditorPlugin implements BufferingPlugin {
 				if (regex != null && !regex.trim().isEmpty()) {
 					try {
 						if (context.getPayload() != null
-								&& Pattern.compile(regex).matcher(context.getPayload()).find()) {
+								&& patternCache.computeIfAbsent(regex, Pattern::compile).matcher(context.getPayload()).find()) {
 							matchesRegex = true;
 							break;
 						}
@@ -184,7 +186,7 @@ public class ManualEditorPlugin implements BufferingPlugin {
 					if (regex != null && !regex.trim().isEmpty()) {
 						try {
 							if (context.getPayload() != null
-									&& Pattern.compile(regex).matcher(context.getPayload()).find()) {
+									&& patternCache.computeIfAbsent(regex, Pattern::compile).matcher(context.getPayload()).find()) {
 								matchesRegex = true;
 								break;
 							}

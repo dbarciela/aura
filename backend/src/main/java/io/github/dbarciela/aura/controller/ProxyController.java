@@ -30,6 +30,8 @@ import io.github.dbarciela.aura.pipeline.ResponseContext;
 @RestController
 public class ProxyController {
 
+	private static final Pattern USAGE_PATTERN = Pattern.compile("\"usage\"\\s*:\\s*(\\{[^}]+\\})");
+
 	private final ProxyPipeline pipeline;
 	private final RestClient restClient;
 	private final String targetServerUrl;
@@ -203,8 +205,7 @@ public class ProxyController {
 			int totalTokens = 0;
 
 			// Try to find "usage" block in payload
-			Pattern p = Pattern.compile("\"usage\"\\s*:\\s*(\\{[^}]+\\})");
-			Matcher m = p.matcher(payload);
+			Matcher m = USAGE_PATTERN.matcher(payload);
 			String usageJson = null;
 			while (m.find()) {
 				usageJson = m.group(1); // last one
