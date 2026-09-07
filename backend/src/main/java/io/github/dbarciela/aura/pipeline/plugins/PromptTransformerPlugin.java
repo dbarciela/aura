@@ -2,6 +2,8 @@ package io.github.dbarciela.aura.pipeline.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ import io.github.dbarciela.aura.pipeline.ResponseContext;
 public class PromptTransformerPlugin implements ProxyPlugin {
 
 	private final PluginSettingsManager settingsManager;
+	private final Map<String, Pattern> patternCache = new ConcurrentHashMap<>();
 
 	public PromptTransformerPlugin(PluginSettingsManager settingsManager) {
 		this.settingsManager = settingsManager;
@@ -111,7 +114,7 @@ public class PromptTransformerPlugin implements ProxyPlugin {
 
 			if (regex != null && !regex.isEmpty()) {
 				try {
-					Pattern pattern = Pattern.compile(regex);
+					Pattern pattern = patternCache.computeIfAbsent(regex, Pattern::compile);
 					Matcher matcher = pattern.matcher(currentPayload);
 
 					if (matcher.find()) {
@@ -143,7 +146,7 @@ public class PromptTransformerPlugin implements ProxyPlugin {
 
 			if (regex != null && !regex.isEmpty()) {
 				try {
-					Pattern pattern = Pattern.compile(regex);
+					Pattern pattern = patternCache.computeIfAbsent(regex, Pattern::compile);
 					Matcher matcher = pattern.matcher(currentPayload);
 
 					if (matcher.find()) {
